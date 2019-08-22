@@ -32,45 +32,45 @@ showCases:
     script: 
         - pwd
         - cd examples/showCases/cavity3d
-        - make
+        - make -f MakeCluster
         - cd ../womersley
-        - make
+        - make -f MakeCluster
         - cd ../rectangularChannel3d
-        - make
+        - make -f MakeCluster
         - cd ../poiseuille
-        - make
+        - make -f MakeCluster
         - cd ../carreauPoiseuille
-        - make
+        - make -f MakeCluster
         - cd ../boussinesqThermal3d
-        - make
+        - make -f MakeCluster
         - cd ../rectangularChannel3d
-        - make
+        - make -f MakeCluster
         - cd ../boussinesqThermal2d
-        - make
+        - make -f MakeCluster
         - cd ../collidingBubbles3d
-        - make
+        - make -f MakeCluster
         - cd ../movingWall
-        - make
+        - make -f MakeCluster
         - cd ../multiComponent3d
-        - make
+        - make -f MakeCluster
         - cd ../multiComponent2d
-        - make
+        - make -f MakeCluster
         - cd ../cavity2d
-        - make
+        - make -f MakeCluster
         - cd ../externalFlowAroundObstacle
-        - make
+        - make -f MakeCluster
         - cd ../aneurysm
-        - make
+        - make -f MakeCluster
         - cd ../particlesInCone
-        - make
+        - make -f MakeCluster
         - cd ../heatedObjectInChannel
-        - make
+        - make -f MakeCluster
         - cd ../cylinder2d
-        - make
+        - make -f MakeCluster
         - cd ../generalExternalFlow
-        - make
+        - make -f MakeCluster
         - cd ../vofMultiPhase
-        - make
+        - make -f MakeCluster
 
 ## Test compilation in the examples/tutorial directory
 tutorial:
@@ -79,11 +79,11 @@ tutorial:
     script: 
         - pwd
         - cd examples/tutorial/permeability
-        - make
+        - make -f MakeCluster
         - cd ../tutorial_1
-        - make
+        - make -f MakeCluster
         - cd ../tutorial_2
-        - make
+        - make -f MakeCluster
 
 ## Test compilation in the examples/codesByTopic directory
 codesByTopic:
@@ -92,55 +92,55 @@ codesByTopic:
     script: 
         - pwd
         - cd examples/codesByTopic/coProcessor
-        - make
+        - make -f MakeCluster
         - cd ../transientStatistics
-        - make
+        - make -f MakeCluster
         - cd ../particlesInTube
-        - make
+        - make -f MakeCluster
         - cd ../marchingCube
-        - make
+        - make -f MakeCluster
         - cd ../complexNumbers
-        - make
+        - make -f MakeCluster
         - cd ../couplings
-        - make
+        - make -f MakeCluster
         - cd ../io
-        - make
+        - make -f MakeCluster
         - cd ../shanChenMultiPhase
-        - make
+        - make -f MakeCluster
         - cd ../copying
-        - make
+        - make -f MakeCluster
         - cd ../dynamicsInfo
-        - make
+        - make -f MakeCluster
         - cd ../navierStokesModels
-        - make
+        - make -f MakeCluster
         - cd ../bounceBack
-        - make
+        - make -f MakeCluster
         - cd ../dotList
-        - make
+        - make -f MakeCluster
         - cd ../externalMacroscopicVariables
-        - make
+        - make -f MakeCluster
         - cd ../asinariDynamics
-        - make
+        - make -f MakeCluster
         - cd ../scalarField
-        - make
+        - make -f MakeCluster
         - cd ../dataAnalysis
-        - make
+        - make -f MakeCluster
         - cd ../boundaryCondition
-        - make
+        - make -f MakeCluster
         - cd ../d3q13
-        - make
+        - make -f MakeCluster
         - cd ../linearAlgebra
-        - make
+        - make -f MakeCluster
         - cd ../userInput
-        - make
+        - make -f MakeCluster
         - cd ../multiBlock
-        - make
+        - make -f MakeCluster
         - cd ../smagorinskyModel
-        - make
+        - make -f MakeCluster
         - cd ../cutTriangularSurface
-        - make
+        - make -f MakeCluster
         - cd ../reparallelize
-        - make
+        - make -f MakeCluster
         
 ## Test compilation in the examples/showCases directory
 stl:
