@@ -98,10 +98,16 @@ public:
     void writeData(ScalarField2D<T>& scalarField,
                    std::string scalarFieldName, TConv scalingFactor=(TConv)1, TConv additiveOffset=(TConv)0);
     template<typename TConv>
+    void writeData(MultiScalarField2D<TConv>& scalarField,
+                   std::string scalarFieldName, TConv scalingFactor=(TConv)1, TConv additiveOffset=(TConv)0);
+    template<typename TConv>
     void writeData(MultiScalarField2D<T>& scalarField,
                    std::string scalarFieldName, TConv scalingFactor=(TConv)1, TConv additiveOffset=(TConv)0);
     template<plint n, typename TConv>
     void writeData(TensorField2D<T,n>& tensorField,
+                   std::string tensorFieldName, TConv scalingFactor=(TConv)1);
+    template<plint n, typename TConv>
+    void writeData(MultiTensorField2D<TConv,n>& tensorField,
                    std::string tensorFieldName, TConv scalingFactor=(TConv)1);
     template<plint n, typename TConv>
     void writeData(MultiTensorField2D<T,n>& tensorField,
@@ -137,10 +143,16 @@ public:
     void writeData(ScalarField3D<T>& scalarField,
                    std::string scalarFieldName, TConv scalingFactor=(TConv)1, TConv additiveOffset=(TConv)0);
     template<typename TConv>
+    void writeData(MultiScalarField3D<TConv>& scalarField,
+                   std::string scalarFieldName, TConv scalingFactor=(TConv)1, TConv additiveOffset=(TConv)0);
+    template<typename TConv>
     void writeData(MultiScalarField3D<T>& scalarField,
                    std::string scalarFieldName, TConv scalingFactor=(TConv)1, TConv additiveOffset=(TConv)0);
     template<plint n, typename TConv>
     void writeData(TensorField3D<T,n>& tensorField,
+                   std::string tensorFieldName, TConv scalingFactor=(TConv)1);
+    template<plint n, typename TConv>
+    void writeData(MultiTensorField3D<TConv,n>& tensorField,
                    std::string tensorFieldName, TConv scalingFactor=(TConv)1);
     template<plint n, typename TConv>
     void writeData(MultiTensorField3D<T,n>& tensorField,
