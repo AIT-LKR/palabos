@@ -62,6 +62,32 @@ template< typename T,
         >
 void latticeToPassiveAdvDiff(MultiBlockLattice2D<T,FluidDescriptor>& fluid, MultiBlockLattice2D<T,ScalarDescriptor>& scalar, Box2D domain);
 
+
+template<typename T, template<typename U> class Descriptor>
+class BoxTemperatureFromScalarFunctional2D : public BoxProcessingFunctional2D_LS<T,Descriptor,T>
+{
+public:
+    virtual void process(Box2D domain, BlockLattice2D<T,Descriptor>& lattice,
+                                       ScalarField2D<T>& scalarField);
+    virtual BoxTemperatureFromScalarFunctional2D<T,Descriptor>* clone() const;
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const;
+    virtual BlockDomain::DomainT appliesTo() const;
+};
+
+
+template<typename T, template<typename U> class Descriptor>
+class BoxTemperatureRateFunctional2D : public BoxProcessingFunctional2D_L<T,Descriptor>
+{
+public:
+    BoxTemperatureRateFunctional2D(T temperatureRate);
+    virtual void process(Box2D domain, BlockLattice2D<T,Descriptor>& lattice);
+    virtual BoxTemperatureRateFunctional2D<T,Descriptor>* clone() const;
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const;
+    virtual BlockDomain::DomainT appliesTo() const;
+private:
+    T temperatureRate;
+};
+
 }  // namespace plb
 
 #endif  // ADVECTION_DIFFUSION_2D_H

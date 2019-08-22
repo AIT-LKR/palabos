@@ -1981,6 +1981,47 @@ void ArrheniusChemicalReactionCoupling3D<T>::getTypeOfModification(std::vector<m
     modified[iBlock] = modif::nothing;  // Volumetric heat capacity.
 }
 
+// ########################################################################## //
+// ############################# Temperature Rate ########################### //
+// ########################################################################## //
+
+template<typename T, template<typename U> class Descriptor>
+BoxTemperatureRateFunctional3D<T,Descriptor>::BoxTemperatureRateFunctional3D(T temperaturRate_)
+    : temperatureRate(temperaturRate_)
+{ }
+
+template<typename T, template<typename U> class Descriptor>
+void BoxTemperatureRateFunctional3D<T,Descriptor>::process (
+        Box3D domain, BlockLattice3D<T,Descriptor>& lattice)
+{
+    for (plint iX=domain.x0; iX<=domain.x1; ++iX) {
+        for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
+            for (plint iZ=domain.z0; iZ<=domain.z1; ++iZ) {
+                T temperature = lattice.get(iX,iY,iZ).computeDensity();
+                T changedTemperature = temperature + temperatureRate;
+                lattice.get(iX,iY,iZ).defineDensity(changedTemperature);
+                iniCellAtEquilibrium(lattice.get(iX,iY,iZ),(T)changedTemperature, Array<T,3> ((T)0.,(T)0.,(T)0.));
+            }
+        }
+    }
+}
+
+template<typename T, template<typename U> class Descriptor>
+BoxTemperatureRateFunctional3D<T,Descriptor>* BoxTemperatureRateFunctional3D<T,Descriptor>::clone() const
+{
+    return new BoxTemperatureRateFunctional3D<T,Descriptor>(*this);
+}
+
+template<typename T, template<typename U> class Descriptor>
+void BoxTemperatureRateFunctional3D<T,Descriptor>::getTypeOfModification(std::vector<modif::ModifT>& modified) const {
+    modified[0] = modif::staticVariables;
+}
+
+template<typename T, template<typename U> class Descriptor>
+BlockDomain::DomainT BoxTemperatureRateFunctional3D<T,Descriptor>::appliesTo() const {
+    return BlockDomain::bulk;
+}
+
 }  // namespace plb
 
 #endif  // ADVECTION_DIFFUSION_3D_HH

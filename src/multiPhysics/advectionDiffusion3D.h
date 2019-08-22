@@ -504,6 +504,21 @@ private:
     static T R; // Universal gas constant [J / (mol * K)].
 };
 
+
+template<typename T, template<typename U> class Descriptor>
+class BoxTemperatureRateFunctional3D : public BoxProcessingFunctional3D_L<T,Descriptor>
+{
+public:
+    BoxTemperatureRateFunctional3D(T temperatureRate);
+    virtual void process(Box3D domain, BlockLattice3D<T,Descriptor>& lattice);
+    virtual BoxTemperatureRateFunctional3D<T,Descriptor>* clone() const;
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const;
+    virtual BlockDomain::DomainT appliesTo() const;
+private:
+    T temperatureRate;
+};
+
+
 }  // namespace plb
 
 #endif  // ADVECTION_DIFFUSION_3D_H

@@ -31,6 +31,9 @@
 #include "finiteDifference/finiteDifference2D.h"
 #include "latticeBoltzmann/geometricOperationTemplates.h"
 
+#include <math.h>
+#include <random>
+
 namespace plb {
 
 template< typename T,
@@ -101,6 +104,76 @@ void latticeToPassiveAdvDiff (
 {
     applyProcessingFunctional (
             new LatticeToPassiveAdvDiff2D<T,FluidDescriptor,ScalarDescriptor>(), domain, fluid, scalar );
+}
+
+
+template<typename T, template<typename U> class Descriptor>
+void BoxTemperatureFromScalarFunctional2D<T,Descriptor>::process (
+        Box2D domain, BlockLattice2D<T,Descriptor>& lattice, ScalarField2D<T>& scalarField)
+{
+    Dot2D offset = computeRelativeDisplacement(lattice, scalarField);
+    for (plint iX=domain.x0; iX<=domain.x1; ++iX) {
+        for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
+            T temperature = scalarField.get(iX+offset.x,iY+offset.y);
+            // pcout << temperature << " at " << iX << ", " << iY << std::endl;
+            lattice.get(iX,iY).defineDensity(temperature);
+            iniCellAtEquilibrium(lattice.get(iX,iY), temperature, Array<T,2>((T)0.,(T)0.));
+        }
+    }
+}
+
+template<typename T, template<typename U> class Descriptor>
+BoxTemperatureFromScalarFunctional2D<T,Descriptor>* BoxTemperatureFromScalarFunctional2D<T,Descriptor>::clone() const
+{
+    return new BoxTemperatureFromScalarFunctional2D<T,Descriptor>(*this);
+}
+//
+template<typename T, template<typename U> class Descriptor>
+void BoxTemperatureFromScalarFunctional2D<T,Descriptor>::getTypeOfModification(std::vector<modif::ModifT>& modified) const {
+    modified[0] = modif::nothing;
+    modified[1] = modif::staticVariables;
+    // modified[1] = modif::dataStructure;
+}
+//
+template<typename T, template<typename U> class Descriptor>
+BlockDomain::DomainT BoxTemperatureFromScalarFunctional2D<T,Descriptor>::appliesTo() const {
+    return BlockDomain::bulk;
+}
+
+
+template<typename T, template<typename U> class Descriptor>
+BoxTemperatureRateFunctional2D<T,Descriptor>::BoxTemperatureRateFunctional2D(T temperaturRate_)
+    : temperatureRate(temperaturRate_)
+{ }
+
+template<typename T, template<typename U> class Descriptor>
+void BoxTemperatureRateFunctional2D<T,Descriptor>::process (
+        Box2D domain, BlockLattice2D<T,Descriptor>& lattice)
+{
+    for (plint iX=domain.x0; iX<=domain.x1; ++iX) {
+        for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
+            T temperature = lattice.get(iX,iY).computeDensity();
+            T changedTemperature = temperature + temperatureRate;
+            lattice.get(iX,iY).defineDensity(changedTemperature);
+            iniCellAtEquilibrium(lattice.get(iX,iY),(T)changedTemperature, Array<T,2> ((T)0.,(T)0.));
+        }
+    }
+}
+
+template<typename T, template<typename U> class Descriptor>
+BoxTemperatureRateFunctional2D<T,Descriptor>* BoxTemperatureRateFunctional2D<T,Descriptor>::clone() const
+{
+    return new BoxTemperatureRateFunctional2D<T,Descriptor>(*this);
+}
+
+template<typename T, template<typename U> class Descriptor>
+void BoxTemperatureRateFunctional2D<T,Descriptor>::getTypeOfModification(std::vector<modif::ModifT>& modified) const {
+    modified[0] = modif::staticVariables;
+}
+
+template<typename T, template<typename U> class Descriptor>
+BlockDomain::DomainT BoxTemperatureRateFunctional2D<T,Descriptor>::appliesTo() const {
+    return BlockDomain::bulk;
 }
 
 }  // namespace plb
