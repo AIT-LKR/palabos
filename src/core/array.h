@@ -691,7 +691,7 @@ public:
         return *this;
     }
     T& operator[](pluint index) {
-        PLB_PRECONDITION(index<4);
+        // PLB_PRECONDITION(index<4);
         return data[index];
     }
     T const& operator[](pluint index) const {
