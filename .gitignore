@@ -5,3 +5,18 @@
 *.dblite
 *.pyc
 *.os
+*.exe
+
+# other files
+*.ogv
+*.avi
+*.mp4
+*.vti
+*.vtk
+*.ppm
+*.gif
+*.log*
+*.txt*
+*.csv*
+*.tmp
+*tmp/
