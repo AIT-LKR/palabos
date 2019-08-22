@@ -114,6 +114,12 @@ void MpiManager::send<char>(char *buf, int count, int dest, int tag) {
 }
 
 template <>
+void MpiManager::send<short>(short *buf, int count, int dest, int tag) {
+    if (!ok) return;
+    MPI_Send(static_cast<void*>(buf), count, MPI_INT, dest, tag, getGlobalCommunicator());
+}
+
+template <>
 void MpiManager::send<int>(int *buf, int count, int dest, int tag) {
     if (!ok) return;
     MPI_Send(static_cast<void*>(buf), count, MPI_INT, dest, tag, getGlobalCommunicator());
@@ -609,6 +615,14 @@ void MpiManager::receive<char>(char *buf, int count, int source, int tag)
     if (!ok) return;
     MPI_Status status;
     MPI_Recv(static_cast<void*>(buf), count, MPI_CHAR, source, tag, getGlobalCommunicator(), &status);
+}
+
+template <>
+void MpiManager::receive<short>(short *buf, int count, int source, int tag)
+{
+    if (!ok) return;
+    MPI_Status status;
+    MPI_Recv(static_cast<void*>(buf), count, MPI_INT, source, tag, getGlobalCommunicator(), &status);
 }
 
 template <>
@@ -1512,6 +1526,13 @@ void MpiManager::bCast<char>(char* sendBuf, int sendCount, int root)
               sendCount, MPI_CHAR, root, getGlobalCommunicator());
 }
 
+template <> void MpiManager::bCast<short>(short* sendBuf, int sendCount, int root)
+{
+    if (!ok) return;
+    MPI_Bcast(static_cast<void*>(sendBuf),
+              sendCount, MPI_INT, root, getGlobalCommunicator());
+}
+
 template <> void MpiManager::bCast<int>(int* sendBuf, int sendCount, int root)
 {
     if (!ok) return;
@@ -1645,6 +1666,19 @@ void MpiManager::bCast<Complex<__float128> >(Complex<__float128>* sendBuf, int s
 
 template <>
 void MpiManager::bCastThroughMaster<char>(char* sendBuf, int sendCount, bool iAmRoot)
+{
+    if (!ok) return;
+    if (iAmRoot && !isMainProcessor()) {
+        send(sendBuf, sendCount, 0);
+    }
+    if (isMainProcessor() && !iAmRoot) {
+        receive(sendBuf, sendCount, MPI_ANY_SOURCE);
+    }
+    bCast(sendBuf, sendCount, 0);
+}
+
+template <>
+void MpiManager::bCastThroughMaster<short>(short* sendBuf, int sendCount, bool iAmRoot)
 {
     if (!ok) return;
     if (iAmRoot && !isMainProcessor()) {

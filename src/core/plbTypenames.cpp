@@ -44,6 +44,12 @@ char const* NativeType<bool>::getName() {
 }
 
 template<>
+char const* NativeType<short>::getName() {
+    static const char name[] = "short";
+    return name;
+}
+
+template<>
 char const* NativeType<int>::getName() {
     static const char name[] = "int";
     return name;
@@ -121,6 +127,9 @@ NativeTypeConstructor::NativeTypeConstructor(std::string typeName)
     }
     else if (tn=="bool") {
         nativeType = new NativeType<bool>;
+    }
+    else if (tn=="short") {
+        nativeType = new NativeType<short>;
     }
     else if (tn=="int") {
         nativeType = new NativeType<int>;
