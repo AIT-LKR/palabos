@@ -15,8 +15,8 @@
 
 typedef double T;
 
-#ifndef PLB_TOOLS_H
-#define PLB_TOOLS_H
+#ifndef TOOLS_PLB_H
+#define TOOLS_PLB_H
 
 using namespace std;
 using namespace plb;
@@ -55,10 +55,6 @@ class PoiseuilleVelocity {
         std::normal_distribution<>* main_distribution;
         std::normal_distribution<>* side_distribution;
 };
-
-bool doesFileExist(std::string fileName);
-
-bool checkCreateDir(std::string dirName);
 
 
 Box3D layer(plint Nx, plint Ny, plint i) {

@@ -17,6 +17,8 @@
 
 #include "../tools/tools.h"
 #include "../tools/tools.hh"
+#include "../tools/tools_geometric.h"
+#include "../tools/tools_geometric.hh"
 
 using namespace std;
 
@@ -607,5 +609,35 @@ TEST_CASE( "stationary") {
             REQUIRE( testChecker.repeatedlyBelowThrehold(currentValue+1.) == false );
     }
 
+}
+
+TEST_CASE( "calculateCOM for single point" ) {
+
+    std::vector<int> point{0,0,0};
+    std::vector<std::vector<int>> voxels{ point };
+
+    std::vector<float> center;
+    center = calculateCOM(voxels);
+
+    REQUIRE( center.at(0) == (float) point.at(0) );
+    REQUIRE( center.at(1) == (float) point.at(1) );
+    REQUIRE( center.at(2) == (float) point.at(2) );
+}
+
+TEST_CASE( "calculateCOM for multiple points" ) {
+
+    std::vector<std::vector<int>> voxels;
+    for (int i=0; i<5; i++) {
+        std::vector<int> point{i,i,i};
+        voxels.push_back(point);
+    }
+
+    std::vector<float> center;
+    center = calculateCOM(voxels);
+    std::vector<float> known_center{2,2,2};
+
+    REQUIRE( center.at(0) == (float) known_center.at(0) );
+    REQUIRE( center.at(1) == (float) known_center.at(1) );
+    REQUIRE( center.at(2) == (float) known_center.at(2) );
 }
 

@@ -11,13 +11,15 @@
 
 #include "./tools.h"
 #include "./tools.hh"
+#include "./tools_files.h"
+#include "./tools_files.hh"
 #include "./plb_physicalFlowParam.h"
-#include "./plb_tools.h"
+#include "./tools_plb.h"
 
 typedef double T;
 
-#ifndef PLB_TOOLS_HH
-#define PLB_TOOLS_HH
+#ifndef TOOLS_PLB_HH
+#define TOOLS_PLB_HH
 
 using namespace std;
 using namespace plb;
