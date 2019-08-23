@@ -176,15 +176,15 @@ T meshSurface(T *X, T *Y, T *Z,
     return area;
 }
 
-template<typename T1>
-std::vector<float> calculateCOM(std::vector<std::vector<T1>> points) {
-    std::vector<float> center;
-    float X = 0;
-    float Y = 0;
-    float Z = 0;
-    T1 numberOfVoxels = points.size();
+template<typename T1, typename T2>
+std::vector<T2> calculateCOM(std::vector<std::vector<T1>> points) {
+    std::vector<T2> center;
+    T2 X = 0;
+    T2 Y = 0;
+    T2 Z = 0;
+    int numberOfVoxels = points.size();
     for (int i=0; i<numberOfVoxels; i++) {
-        std::vector<int> currentVoxel = points.at(i);
+        std::vector<T1> currentVoxel = points.at(i);
         X += currentVoxel.at(0);
         Y += currentVoxel.at(1);
         Z += currentVoxel.at(2);
