@@ -63,5 +63,8 @@ T meshSurface(T *X, T *Y, T *Z,
 template<typename T1, typename T2>
 std::vector<T2> calculateCOM(std::vector<std::vector<T1>> coordinates);
 
+template<typename T1, typename T2>
+T2 diameterFromSphereVolume(T1 volume);
+
 
 #endif

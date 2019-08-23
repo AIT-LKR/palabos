@@ -199,5 +199,12 @@ std::vector<T2> calculateCOM(std::vector<std::vector<T1>> points) {
     return center;
 }
 
+template<typename T1, typename T2>
+T2 diameterFromSphereVolume(T1 volume) {
+    T2 diameter = 0;
+    diameter = 2*cbrt( 3.*(T2)volume /4./M_PI );
+    return diameter;
+}
+
 
 #endif

@@ -617,7 +617,7 @@ TEST_CASE( "calculateCOM for single point" ) {
     std::vector<std::vector<int>> voxels{ point };
 
     std::vector<float> center;
-    center = calculateCOM(voxels);
+    center = calculateCOM<int,float>(voxels);
 
     REQUIRE( center.at(0) == (float) point.at(0) );
     REQUIRE( center.at(1) == (float) point.at(1) );
@@ -633,11 +633,22 @@ TEST_CASE( "calculateCOM for multiple points" ) {
     }
 
     std::vector<float> center;
-    center = calculateCOM(voxels);
+    center = calculateCOM<int,float>(voxels);
     std::vector<float> known_center{2,2,2};
 
     REQUIRE( center.at(0) == (float) known_center.at(0) );
     REQUIRE( center.at(1) == (float) known_center.at(1) );
     REQUIRE( center.at(2) == (float) known_center.at(2) );
+}
+
+TEST_CASE( "calculate diameterFromSphereVolume", "[!hide]" ) {
+
+    SECTION( "volume=1" ) {
+        int volume = 1;
+        float diameter = diameterFromSphereVolume<int,float>(volume);
+        float known_diameter = 1.2407;
+
+        REQUIRE( diameter == known_diameter );
+    }
 }
 
