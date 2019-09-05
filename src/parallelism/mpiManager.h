@@ -152,16 +152,19 @@ public:
     /// Complete a non-blocking MPI operation
     void wait(MPI_Request* request, MPI_Status* status);
 
+    /// Implementation code for Gather
+    template <typename T>
+    void gather_impl(T* sendBuf, int sendCount, T* recvBuf, int recvCounts,
+                      int root);
+    template <typename T>
+    void gatherv_impl(T* sendBuf, int sendCount, T* recvBuf, int* recvCounts,
+                      int* displs, int root);
 private:
     /// Implementation code for Scatter
     template <typename T>
     void scatterv_impl(T *sendBuf, int* sendCounts, int* displs,
                        T* recvBuf, int recvCount, int root);
 
-    /// Implementation code for Gather
-    template <typename T>
-    void gatherv_impl(T* sendBuf, int sendCount, T* recvBuf, int* recvCounts,
-                      int* displs, int root);
 private:
     MpiManager();
     ~MpiManager();

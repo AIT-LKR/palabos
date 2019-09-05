@@ -1448,6 +1448,17 @@ void MpiManager::gatherv_impl<float>(float* sendBuf, int sendCount,
 }
 
 template <>
+void MpiManager::gather_impl<double>(double* sendBuf, int sendCount,
+                                     double* recvBuf, int recvCount,
+                                     int root)
+{
+    if (!ok) return;
+    MPI_Gather(static_cast<void*>(sendBuf), sendCount, MPI_DOUBLE,
+               static_cast<void*>(recvBuf), recvCount, MPI_DOUBLE,
+               root, getGlobalCommunicator());
+}
+
+template <>
 void MpiManager::gatherv_impl<double>(double* sendBuf, int sendCount,
                                       double* recvBuf, int* recvCounts, int* displs,
                                       int root)

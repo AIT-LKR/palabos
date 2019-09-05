@@ -43,12 +43,14 @@ BlockStatistics::BlockStatistics()
 
 BlockStatistics::BlockStatistics(BlockStatistics const& rhs)
   : tmpAv(rhs.tmpAv),
+    tmpList(rhs.tmpList),
     tmpSum(rhs.tmpSum),
     tmpMax(rhs.tmpMax),
     tmpIntSum(rhs.tmpIntSum),
     tmpNumCells(rhs.tmpNumCells),
     doubleReductions(rhs.doubleReductions),
     averageVect(rhs.averageVect),
+    listVect(rhs.listVect),
     sumVect(rhs.sumVect),
     maxVect(rhs.maxVect),
     intSumVect(rhs.intSumVect),
@@ -58,6 +60,7 @@ BlockStatistics::BlockStatistics(BlockStatistics const& rhs)
 void BlockStatistics::swap(BlockStatistics& rhs)
 {
     tmpAv.swap    (rhs.tmpAv);
+    tmpList.swap  (rhs.tmpList);
     tmpSum.swap   (rhs.tmpSum);
     tmpMax.swap   (rhs.tmpMax);
     tmpIntSum.swap(rhs.tmpIntSum);
@@ -65,6 +68,7 @@ void BlockStatistics::swap(BlockStatistics& rhs)
 
     doubleReductions.swap(rhs.doubleReductions);
     averageVect.swap(rhs.averageVect);
+    listVect.swap(rhs.listVect);
     sumVect.swap    (rhs.sumVect);
     maxVect.swap    (rhs.maxVect);
     intSumVect.swap (rhs.intSumVect);
@@ -89,6 +93,9 @@ void BlockStatistics::evaluate() {
             averageVect[iVect] = tmpAv[iVect] / (double)tmpNumCells;
         }
     }
+    for (pluint iVect=0; iVect<listVect.size(); ++iVect) {
+        listVect[iVect].swap(tmpList[iVect]);
+    }
     for (pluint iVect=0; iVect<sumVect.size(); ++iVect) {
         sumVect[iVect]     = tmpSum[iVect];
     }
@@ -105,6 +112,9 @@ void BlockStatistics::evaluate() {
     for (pluint iVect=0; iVect<averageVect.size(); ++iVect) {
         tmpAv[iVect]     = 0.;
     }
+    for (pluint iVect=0; iVect<listVect.size(); ++iVect) {
+        tmpList[iVect].clear();
+    }
     for (pluint iVect=0; iVect<sumVect.size(); ++iVect) {
         tmpSum[iVect]    = 0.;
     }
@@ -120,10 +130,11 @@ void BlockStatistics::evaluate() {
 }
 
 void BlockStatistics::evaluate (
-        std::vector<double> const& average, std::vector<double> const& sum,
+        std::vector<double> const& average, std::vector<std::vector<double>> const& list, std::vector<double> const& sum,
         std::vector<double> const& max, std::vector<plint> const& intSum, pluint numCells_ )
 {
     PLB_PRECONDITION ( averageVect.size() == average.size() );
+    PLB_PRECONDITION ( listVect.size() == list.size() );
     PLB_PRECONDITION ( sumVect.size()     == sum.size() );
     PLB_PRECONDITION ( maxVect.size()     == max.size() );
     PLB_PRECONDITION ( intSumVect.size()  == intSum.size() );
@@ -131,6 +142,10 @@ void BlockStatistics::evaluate (
     for (pluint iAverage=0; iAverage<averageVect.size(); ++iAverage) {
         averageVect[iAverage] = average[iAverage];
         tmpAv[iAverage] = 0.;
+    }
+    for (pluint iList=0; iList<listVect.size(); ++iList) {
+        listVect[iList] = list[iList];
+        tmpList[iList].clear();
     }
     for (pluint iSum=0; iSum<sumVect.size(); ++iSum) {
         sumVect[iSum] = sum[iSum];
@@ -159,6 +174,18 @@ plint BlockStatistics::subscribeAverage() {
     plint newIndex = newSize-1;
     tmpAv[newIndex] = 0.;
     averageVect[newIndex] = 0.;
+    return newIndex;
+}
+
+/** \return Identifier for this observable, to be used for gatherList() and getList().
+ */
+plint BlockStatistics::subscribeList() {
+    plint newSize = tmpList.size()+1;
+    tmpList.resize(newSize);
+    listVect.resize(newSize);
+    plint newIndex = newSize-1;
+    tmpList[newIndex].clear();
+    listVect[newIndex].clear();
     return newIndex;
 }
 
@@ -207,6 +234,11 @@ void BlockStatistics::gatherAverage(plint whichAverage, double value) {
     tmpAv[whichAverage] += value;
 }
 
+void BlockStatistics::gatherList(plint whichList, double value) {
+    PLB_PRECONDITION( whichList < (plint) tmpList.size() );
+    tmpList[whichList].push_back(value);
+}
+
 void BlockStatistics::gatherSum(plint whichSum, double value) {
     PLB_PRECONDITION( whichSum < (plint) tmpSum.size() );
     tmpSum[whichSum] += value;
@@ -231,6 +263,11 @@ void BlockStatistics::incrementStats() {
 double BlockStatistics::getAverage(plint whichAverage) const {
     PLB_PRECONDITION( whichAverage < (plint) tmpAv.size() );
     return averageVect[whichAverage];
+}
+
+std::vector<double> BlockStatistics::getList(plint whichList) const {
+    PLB_PRECONDITION( whichList < (plint) tmpList.size() );
+    return listVect[whichList];
 }
 
 double BlockStatistics::getSum(plint whichSum) const {
@@ -267,6 +304,7 @@ void combine(std::vector<BlockStatistics*>& components, BlockStatistics& result)
 {
     PLB_PRECONDITION( components.size()>0 );
     std::vector<double> averageVect(components[0]->getAverageVect());
+    std::vector<std::vector<double>> listVect(components[0]->getListVect());
     std::vector<double> sumVect(components[0]->getSumVect());
     std::vector<double> maxVect(components[0]->getMaxVect());
     std::vector<plint>  intSumVect(components[0]->getIntSumVect());
@@ -276,6 +314,10 @@ void combine(std::vector<BlockStatistics*>& components, BlockStatistics& result)
         //   corrected.
         for (pluint iAve=0; iAve<averageVect.size(); ++iAve) {
             averageVect[iAve] += components[iComp]->getAverageVect()[iAve];
+        }
+        for (pluint iList=0; iList<listVect.size(); ++iList) {
+            std::vector<double> tmpComponentsList = components[iComp]->getListVect()[iList];
+            listVect[iList].insert( listVect[iList].end(), tmpComponentsList.begin(), tmpComponentsList.end() );
         }
         for (pluint iSum=0; iSum<sumVect.size(); ++iSum) {
             sumVect[iSum] += components[iComp]->getSumVect()[iSum];
@@ -289,7 +331,7 @@ void combine(std::vector<BlockStatistics*>& components, BlockStatistics& result)
     }
 
 
-    result.evaluate(averageVect, sumVect, maxVect, intSumVect, 0);
+    result.evaluate(averageVect, listVect, sumVect, maxVect, intSumVect, 0);
 }
 
 }  // namespace plb

@@ -41,6 +41,8 @@ ParallelCombinedStatistics* ParallelCombinedStatistics::clone() const
 void ParallelCombinedStatistics::reduceStatistics (
             std::vector<double>& averageObservables,
             std::vector<double>& sumWeights,
+            std::vector<std::vector<double>>& listObservables,
+            std::vector<double>& sumWeightsList,
             std::vector<double>& sumObservables,
             std::vector<double>& maxObservables,
             std::vector<plint>& intSumObservables ) const
@@ -55,6 +57,44 @@ void ParallelCombinedStatistics::reduceStatistics (
         }
         global::mpi().bCast(&globalAverage, 1);
         averageObservables[iAverage] = globalAverage;
+    }
+
+    // List
+    for (pluint iList=0; iList<listObservables.size(); ++iList) {
+        int numProcesses = global::mpi().getSize();
+
+        // Each process tells the root how many elements it holds
+            // count has to be double, because gatherv_impl takes values from
+            // sumWeightList[iList] which are of type double
+        double countsDouble[numProcesses];
+        int rank = global::mpi().getRank();
+        global::mpi().gather_impl(&sumWeightsList[iList], 1, &countsDouble[0], 1, global::mpi().bossId());
+        global::mpi().bCast(&countsDouble[0], numProcesses);
+            // total number of to be collected values:
+        double globalWeightList = 0;
+        for (int i = 0; i < numProcesses; i++) globalWeightList += countsDouble[i];
+        // For next steps, convert to int:
+        int globalListLength = int(globalWeightList);
+        int counts[numProcesses];
+        for (int i = 0; i < numProcesses; i++) counts[i] = (int)countsDouble[i];
+/*
+        // Check if gatherv_impl worked correctly & numProceesses is correct:
+        double test_globalWeightList = 0;
+        global::mpi().reduce(sumWeightsList[iList], test_globalWeightList, MPI_SUM);
+        if (global::mpi().isMainProcessor() && globalWeightList != test_globalWeightList ) exit(1);
+*/
+
+        // Displacements in the receive buffer for MPI_GATHERV
+            // for now 'only' int, because gatherv_impl does not support long or unsigned int!!!!!
+            // need to be changed for higher resolution?
+        int disps[numProcesses];
+        for (int i = 0; i < numProcesses; i++) disps[i] = (i > 0) ? (disps[i-1] + counts[i-1] ) : 0;
+        // Collection of all list values
+        std::vector<double> globalList(globalListLength);
+        global::mpi().gatherv_impl(&listObservables[iList].front(), counts[rank],
+                                   &globalList.front(), counts, disps, global::mpi().bossId());
+        global::mpi().bCast(&globalList[0], globalListLength);
+        listObservables[iList] = globalList;
     }
 
     // Sum

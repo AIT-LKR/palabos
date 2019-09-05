@@ -338,9 +338,9 @@ void MaskedReplaceAlphaFunctional3D<T1,T2>::process (
     }
 }
 
-/* ******** MaskedBoxScalarHistogramFunctional3D ******* */
+/* ******** MaskedBoxScalarListFunctional3D ******* */
 template<typename T, class BoolMask>
-void MaskedBoxScalarHistogramFunctional3D<T, BoolMask>::process (Box3D domain,
+void MaskedBoxScalarListFunctional3D<T, BoolMask>::process (Box3D domain,
                                                        ScalarField3D<T>& scalarField,
                                                        ScalarField3D<int>& mask ) {
     Dot3D offset = computeRelativeDisplacement(scalarField, mask);
@@ -349,7 +349,7 @@ void MaskedBoxScalarHistogramFunctional3D<T, BoolMask>::process (Box3D domain,
         for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
             for (plint iZ=domain.z0; iZ<=domain.z1; ++iZ) {
                 if (condition(mask.get(iX+offset.x, iY+offset.y, iZ+offset.z))) {
-                    statistics.gatherHistogram(histogramScalarId, (T)scalarField.get(iX,iY,iZ));
+                    statistics.gatherList(listScalarId, (T)scalarField.get(iX,iY,iZ));
                     statistics.incrementStats();
                 }
             }
@@ -358,14 +358,14 @@ void MaskedBoxScalarHistogramFunctional3D<T, BoolMask>::process (Box3D domain,
 }
 
 template<typename T, class BoolMask>
-std::vector<T> MaskedBoxScalarHistogramFunctional3D<T, BoolMask>::getHistogramScalar() const {
-    std::vector<T> histogram = this->getStatistics().getHistogram(histogramScalarId);
-    // The histogram is internally computed on floating-point values. If T is
+std::vector<T> MaskedBoxScalarListFunctional3D<T, BoolMask>::getListScalar() const {
+    std::vector<T> list = this->getStatistics().getList(listScalarId);
+    // The list is internally computed on floating-point values. If T is
     //   integer, the value must be rounded at the end.
     if (std::numeric_limits<T>::is_integer) {
-        return std::vector<T>(histogram.begin(), histogram.end());
+        return std::vector<T>(list.begin(), list.end());
     }
-    return histogram;
+    return list;
 }
 
 /* ************* Class PseudomaskedSmoothen3D ******************* */

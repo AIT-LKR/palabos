@@ -40,6 +40,10 @@ plint StatSubscriber3D::subscribeAverage() {
     return block.getInternalStatistics().subscribeAverage();
 }
 
+plint StatSubscriber3D::subscribeList() {
+    return block.getInternalStatistics().subscribeList();
+}
+
 plint StatSubscriber3D::subscribeSum() {
     return block.getInternalStatistics().subscribeSum();
 }

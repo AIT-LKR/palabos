@@ -115,26 +115,26 @@ private:
     std::vector<int> flags;
 };
 
-/* ******** MaskedBoxScalarHistogramFunctional3D ******* */
+/* ******** MaskedBoxScalarListFunctional3D ******* */
 template<typename T, class BoolMask>
-class MaskedBoxScalarHistogramFunctional3D : public ReductiveBoxProcessingFunctional3D_SS<T,int> {
+class MaskedBoxScalarListFunctional3D : public ReductiveBoxProcessingFunctional3D_SS<T,int> {
 public:
-    MaskedBoxScalarHistogramFunctional3D(BoolMask condition_)
-        : histogramScalarId(this->getStatistics().subscribeHistogram()),
+    MaskedBoxScalarListFunctional3D(BoolMask condition_)
+        : listScalarId(this->getStatistics().subscribeList()),
           condition(condition_) { }
     void process ( Box3D domain,
                    ScalarField3D<T>& scalarField,
                    ScalarField3D<int>& mask );
-    MaskedBoxScalarHistogramFunctional3D<T,BoolMask>* clone() const {
-        return new MaskedBoxScalarHistogramFunctional3D<T,BoolMask>(*this);
+    MaskedBoxScalarListFunctional3D<T,BoolMask>* clone() const {
+        return new MaskedBoxScalarListFunctional3D<T,BoolMask>(*this);
     }
     virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const {
         modified[0] = modif::nothing;
         modified[1] = modif::nothing;
     }
-    std::vector<T> getHistogramScalar() const;
+    std::vector<T> getListScalar() const;
 private:
-    plint histogramScalarId;
+    plint listScalarId;
     BoolMask condition;
 };
 

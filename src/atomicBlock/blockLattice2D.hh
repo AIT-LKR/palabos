@@ -69,6 +69,7 @@ BlockLattice2D<T,Descriptor>::BlockLattice2D (
     //   max uSqr, average rho). These have previously been subscribed
     //   in the constructor of BlockLatticeBase2D.
     std::vector<double> average, sum, max;
+    std::vector<std::vector<double>> list;
     std::vector<plint> intSum;
     average.push_back(Descriptor<double>::rhoBar(1.));
                              // default average rho to 1, to avoid division by
@@ -76,7 +77,7 @@ BlockLattice2D<T,Descriptor>::BlockLattice2D (
     average.push_back(0.);  // default average uSqr to 0
     max.push_back(0.);      // default max uSqr to 0
     plint numCells = 1;       // pretend fictitious cell to evaluate statistics
-    this->getInternalStatistics().evaluate (average, sum, max, intSum, numCells);
+    this->getInternalStatistics().evaluate (average, list, sum, max, intSum, numCells);
 }
 
 /** During destruction, the memory for the lattice and the contained

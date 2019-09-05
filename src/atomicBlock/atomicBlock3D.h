@@ -48,6 +48,8 @@ public:
     StatSubscriber3D(AtomicBlock3D& block_);
     /// Subscribe a new observable for which the average value is computed.
     virtual plint subscribeAverage();
+    /// Subscribe a new observable for which a list is computed.
+    virtual plint subscribeList();
     /// Subscribe a new observable for which the sum is computed.
     virtual plint subscribeSum();
     /// Subscribe a new observable for which the maximum is computed.

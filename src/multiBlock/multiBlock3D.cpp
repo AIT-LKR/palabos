@@ -54,6 +54,16 @@ plint MultiStatSubscriber3D::subscribeAverage() {
     return multiBlock.getInternalStatistics().subscribeAverage();
 }
 
+plint MultiStatSubscriber3D::subscribeList() {
+    std::vector<plint> const& blocks
+        = multiBlock.getLocalInfo().getBlocks();
+    for (pluint iBlock=0; iBlock<blocks.size(); ++iBlock) {
+        plint blockId = blocks[iBlock];
+        multiBlock.getComponent(blockId).internalStatSubscription().subscribeList();
+    }
+    return multiBlock.getInternalStatistics().subscribeList();
+}
+
 plint MultiStatSubscriber3D::subscribeSum() {
     std::vector<plint> const& blocks
         = multiBlock.getLocalInfo().getBlocks();

@@ -59,6 +59,8 @@ public:
     virtual ~StatSubscriber() { }
     /// Subscribe a new observable for which the average value is computed.
     virtual plint subscribeAverage() =0;
+    /// Subscribe a new observable for which a list is computed.
+    virtual plint subscribeList() =0;
     /// Subscribe a new observable for which the sum is computed.
     virtual plint subscribeSum() =0;
     /// Subscribe a new observable for which the maximum is computed.
@@ -83,10 +85,12 @@ public:
     /// evaluate() must be called after each lattice iteration.
     void evaluate();
     /// Attribute a value to the public statistics, and reset running statistics to default.
-    void evaluate(std::vector<double> const& average, std::vector<double> const& sum,
+    void evaluate(std::vector<double> const& average, std::vector<std::vector<double>> const& list, std::vector<double> const& sum,
                   std::vector<double> const& max, std::vector<plint> const& intSum, pluint numCells_);
     /// Contribute the values of the current cell to the statistics of an "average observable"
     void gatherAverage(plint whichAverage, double value);
+    /// Contribute the values of the current cell to the statistics of an "list observable"
+    void gatherList(plint whichList, double value);
     /// Contribute the values of the current cell to the statistics of a "sum observable"
     void gatherSum(plint whichSum, double value);
     /// Contribute the values of the current cell to the statistics of a "max observable"
@@ -100,6 +104,8 @@ public:
 
     /// Get the public value for any "average observable"
     double getAverage(plint whichAverage) const;
+    /// Get the public value for any "list observable"
+    std::vector<double> getList(plint whichList) const;
     /// Get the public value for any "sum observable"
     double getSum(plint whichSum) const;
     /// Get the public value for any "max observable"
@@ -109,6 +115,8 @@ public:
 
     /// Get a handle to the vector with all "average observables"
     std::vector<double>& getAverageVect() { return averageVect; }
+    /// Get a handle to the vector with all "list observables"
+    std::vector<std::vector<double>>& getListVect() { return listVect; }
     /// Get a handle to the vector with all "sum observables"
     std::vector<double>& getSumVect() { return sumVect; }
     /// Get a handle to the vector with all "max observables"
@@ -120,6 +128,8 @@ public:
 
     /// Subscribe a new observable for which the average value is computed.
     plint subscribeAverage();
+    /// Subscribe a new observable for which a list is computed.
+    plint subscribeList();
     /// Subscribe a new observable for which the sum is computed.
     plint subscribeSum();
     /// Subscribe a new observable for which the maximum is computed.
@@ -132,7 +142,11 @@ private:
     /// Give a name to floating point reductions to keep track of their order of subscription.
     enum DoubleReductions {averageRed, sumRed, maxRed};
     /// Variables to store running statistics of type double.
-    std::vector<double> tmpAv, tmpSum, tmpMax;
+    std::vector<double> tmpAv;
+    /// Variables to store running statistics of type std::vector<double>.
+    std::vector<std::vector<double>> tmpList;
+    /// CONTINUE WITH SOME variables to store running statistics of type double.
+    std::vector<double> tmpSum, tmpMax;
     /// Variables to store summed integer observables
     std::vector<plint> tmpIntSum;
     /// Running value for number of cells over which statistics has been computed
@@ -140,7 +154,11 @@ private:
     /// Keep track of the order of subscriptions for floating point reductions.
     std::vector<DoubleReductions> doubleReductions;
     /// Variables containing the public result of type double
-    std::vector<double> averageVect, sumVect, maxVect;
+    std::vector<double> averageVect;
+    /// Variables containing the public result of type std::vector<double>
+    std::vector<std::vector<double>> listVect;
+    /// CONTINUE WITH SOME Variables containing the public result of type double
+    std::vector<double> sumVect, maxVect;
     /// Variables containing the public result for the summed integer observables
     std::vector<plint> intSumVect;
     /// Public result for number of cells over which statistics has been computed

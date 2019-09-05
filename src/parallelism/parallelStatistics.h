@@ -43,6 +43,8 @@ protected:
     virtual void reduceStatistics (
             std::vector<double>& averageObservables,
             std::vector<double>& sumWeights,
+            std::vector<std::vector<double>>& listObservables,
+            std::vector<double>& sumWeightsList,
             std::vector<double>& sumObservables,
             std::vector<double>& maxObservables,
             std::vector<plint>& intSumObservables ) const;

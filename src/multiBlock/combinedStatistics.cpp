@@ -58,6 +58,24 @@ void CombinedStatistics::computeLocalAverage (
     }
 }
 
+void CombinedStatistics::computeLocalList (
+            std::vector<BlockStatistics const*> const& individualStatistics,
+            std::vector<std::vector<double>>& listObservables,
+            std::vector<double>& sumWeightsList ) const
+{
+    // For each "list observable"
+    for (pluint iList=0; iList<listObservables.size(); ++iList) {
+        listObservables[iList].clear();
+        sumWeightsList[iList] = 0.;
+        // Compute local list
+        for (pluint iStat=0; iStat<individualStatistics.size(); ++iStat) {
+            std::vector<double> tmpIndividualList = individualStatistics[iStat]->getList(iList);
+            listObservables[iList].insert( listObservables[iList].end(), tmpIndividualList.begin(), tmpIndividualList.end() );
+        }
+        sumWeightsList[iList] = listObservables[iList].size();
+    }
+}
+
 void CombinedStatistics::computeLocalSum (
         std::vector<BlockStatistics const*> const& individualStatistics,
         std::vector<double>& sumObservables ) const
@@ -114,6 +132,11 @@ void CombinedStatistics::combine (
     std::vector<double> sumWeights(result.getAverageVect().size());
     computeLocalAverage(individualStatistics, averageObservables, sumWeights);
 
+    // Local lists
+    std::vector<std::vector<double>> listObservables(result.getListVect().size());
+    std::vector<double> sumWeightsList(result.getListVect().size());
+    computeLocalList(individualStatistics, listObservables, sumWeightsList);
+
     // Local sums
     std::vector<double> sumObservables(result.getSumVect().size());
     computeLocalSum(individualStatistics, sumObservables);
@@ -129,13 +152,14 @@ void CombinedStatistics::combine (
     // Compute global, cross-core statistics
     this->reduceStatistics (
             averageObservables, sumWeights,
+            listObservables, sumWeightsList,
             sumObservables,
             maxObservables,
             intSumObservables );
 
     // Update public statistics in resulting block
     result.evaluate (
-        averageObservables, sumObservables, maxObservables, intSumObservables, 0 );
+        averageObservables, listObservables, sumObservables, maxObservables, intSumObservables, 0 );
 }
 
 
@@ -146,6 +170,8 @@ SerialCombinedStatistics* SerialCombinedStatistics::clone() const {
 void SerialCombinedStatistics::reduceStatistics (
             std::vector<double>& averageObservables,
             std::vector<double>& sumWeights,
+            std::vector<std::vector<double>>& listObservables,
+            std::vector<double>& sumWeightsList,
             std::vector<double>& sumObservables,
             std::vector<double>& maxObservables,
             std::vector<plint>& intSumObservables ) const

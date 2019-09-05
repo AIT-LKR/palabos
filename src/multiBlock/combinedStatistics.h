@@ -45,6 +45,8 @@ protected:
     virtual void reduceStatistics (
             std::vector<double>& averageObservables,
             std::vector<double>& sumWeights,
+            std::vector<std::vector<double>>& listObservables,
+            std::vector<double>& sumWeightsList,
             std::vector<double>& sumObservables,
             std::vector<double>& maxObservables,
             std::vector<plint>& intSumObservables ) const =0;
@@ -53,6 +55,10 @@ private:
             std::vector<BlockStatistics const*> const& individualStatistics,
             std::vector<double>& averageObservables,
             std::vector<double>& sumWeights ) const;
+    void computeLocalList (
+            std::vector<BlockStatistics const*> const& individualStatistics,
+            std::vector<std::vector<double>>& listObservables,
+            std::vector<double>& sumWeightsList ) const;
     void computeLocalSum (
             std::vector<BlockStatistics const*> const& individualStatistics,
             std::vector<double>& sumObservables ) const;
@@ -71,6 +77,8 @@ protected:
     virtual void reduceStatistics (
             std::vector<double>& averageObservables,
             std::vector<double>& sumWeights,
+            std::vector<std::vector<double>>& listObservables,
+            std::vector<double>& sumWeightsList,
             std::vector<double>& sumObservables,
             std::vector<double>& maxObservables,
             std::vector<plint>& intSumObservables ) const;
