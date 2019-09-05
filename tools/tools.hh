@@ -1,20 +1,11 @@
-#include <memory>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <chrono>
-#include <random>
-#include <iostream>
-#include <iterator>
-#include <algorithm>
-#include <iterator>
-#include <unordered_map>
-#include <math.h>       /* sqrt */
-
-#include "../tools/tools.h"
-
 #ifndef TOOLS_HH
 #define TOOLS_HH
+
+#include <string>
+#include <vector>
+#include <unordered_map>
+
+#include "../tools/tools.h"
 
 using namespace std;
 
@@ -128,18 +119,6 @@ T2 rampVelocity(T2 vel, T1 currentTime, T1 timeMax) {
     else return vel*currentTime/timeMax;
 }
 
-/// Velocity on the parabolic Poiseuille profile
-template<typename T1, typename T2>
-T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius) {
-    // r_dash represents shift from zero to new inletCentre and scaling to
-    // a parabola across inlet
-    T2 r_dash = T2(r)/inletRadius;
-    if (r_dash > 1.) return 0;
-    T2 r_dash_sqr = pow( r_dash, powerPoiseuilleVel);
-    T2 vel = -1*uMax*( r_dash_sqr - 1);
-    return vel;
-}
-
 template<typename T>
 T getGradient(T firstValue, T secondValue, T step) {
     return (secondValue-firstValue)/step;
@@ -186,6 +165,18 @@ double numberInString(std::string text)
     std::stringstream ss(text);
     ss >> tmp1 >> tmp2 >> value;
     return value;
+}
+
+template<typename T>
+inRange<T>::inRange(T min_, T max_)
+    : min(min_), max(max_)
+{}
+template<typename T>
+bool inRange<T>::operator()(T value) const {
+    if (value < min || value > max)
+        return false;
+    else
+        return true;
 }
 
 

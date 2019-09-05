@@ -1,13 +1,15 @@
+#ifndef TOOLS_PLB_HH
+#define TOOLS_PLB_HH
+
 #include <../src/core/globalDefs.h>
 #include <../src/io/parallelIO.h>
 #include <../externalLibraries/tinyxml/tinyxml.h>
 
-#include <memory>
 #include <string>
 #include <sstream>
 #include <vector>
-#include <chrono>
 #include <random>
+#include <chrono>
 
 #include "./tools.h"
 #include "./tools.hh"
@@ -16,10 +18,6 @@
 #include "./plb_physicalFlowParam.h"
 #include "./tools_plb.h"
 
-typedef double T;
-
-#ifndef TOOLS_PLB_HH
-#define TOOLS_PLB_HH
 
 using namespace std;
 using namespace plb;
@@ -72,84 +70,6 @@ void appendToFile(std::string data, std::string fileName) {
 }
 
 
-/* **************************************************************************** */
-
-template<typename T>
-PoiseuilleVelocity<T>::PoiseuilleVelocity(T uLB_, T uDev_, plint powerPoiseuilleVel_, char dir_,
-        plint inletCentre_, plint inletRadius_)
-    : uLB(uLB_), uDev(uDev_), powerPoiseuilleVel(powerPoiseuilleVel_), dir(dir_),
-     inletCentreA(inletCentre_), inletCentreB(-1), inletRadius(inletRadius_),
-     seed(std::chrono::system_clock::now().time_since_epoch().count())
-{
-    // random number generator
-    generator = new std::default_random_engine(seed);
-    main_distribution = new std::normal_distribution<T>(uLB-uDev, uDev);
-    side_distribution = new std::normal_distribution<T>(0., uDev);
-}
-
-template<typename T>
-PoiseuilleVelocity<T>::PoiseuilleVelocity(T uLB_, T uDev_, plint powerPoiseuilleVel_, char dir_,
-        plint inletCentreA_, plint inletCentreB_, plint inletRadius_)
-    : uLB(uLB_), uDev(uDev_), powerPoiseuilleVel(powerPoiseuilleVel_), dir(dir_),
-      inletCentreA(inletCentreA_), inletCentreB(inletCentreB_), inletRadius(inletRadius_),
-      seed(std::chrono::system_clock::now().time_since_epoch().count())
-{
-    // random number generator
-    generator = new std::default_random_engine(seed);
-    main_distribution = new std::normal_distribution<T>(uLB-uDev, uDev);
-    side_distribution = new std::normal_distribution<T>(0., uDev);
-}
-
-template<typename T>
-void PoiseuilleVelocity<T>::operator()(plint iX, plint iY, plint iZ, Array<T,3>& u) const {
-    T main_velocity = uLB;
-    T side_velocity = 0.;
-    T down_velocity = 0.;
-    if (uDev) {
-        main_velocity = (*main_distribution)(*generator);
-        side_velocity = (*side_distribution)(*generator)/4;
-        down_velocity = (*side_distribution)(*generator)/4;
-    }
-    plint r;
-
-    if (dir == 'x') {
-        if (inletCentreB == -1)
-            r = distanceFromPoint(iY,iZ, inletCentreA,iZ);
-        else
-            r = distanceFromPoint(iY,iZ, inletCentreA,inletCentreB);
-        u[0] = poiseuilleVelocity(r, main_velocity, powerPoiseuilleVel, inletRadius);
-        u[1] = side_velocity;
-        u[2] = down_velocity;
-    }
-    if (dir == 'y') {
-        if (inletCentreB == -1)
-            r = distanceFromPoint(iX,iZ, inletCentreA,iZ);
-        else
-            r = distanceFromPoint(iX,iZ, inletCentreA,inletCentreB);
-        u[0] = side_velocity;
-        u[1] = poiseuilleVelocity(r, main_velocity, powerPoiseuilleVel, inletRadius);
-        u[2] = down_velocity;
-    }
-}
-
-template<typename T>
-void PoiseuilleVelocity<T>::operator()(plint iX, plint iY, Array<T,2>& u) const {
-    T main_velocity = uLB;
-    T side_velocity = 0.;
-    if (uDev) {
-        main_velocity = (*main_distribution)(*generator);
-        side_velocity = (*side_distribution)(*generator)/2;
-    }
-
-    if( dir == 'x' ) {
-        u[0] = poiseuilleVelocity(iY-inletCentreA, main_velocity, powerPoiseuilleVel, inletRadius);
-        u[1] = side_velocity;
-    }
-    if( dir == 'y' ) {
-        u[0] = side_velocity;
-        u[1] = poiseuilleVelocity(iX-inletCentreA, main_velocity, powerPoiseuilleVel, inletRadius);
-    }
-}
 
 template<typename T>
 void writeLogFile(PhysicalFlowParam<T> const param,
@@ -190,178 +110,6 @@ void writeLogFile(PhysicalFlowParam<T> const param,
     rewriteFile(logText.str(), fileName);
 }
 
-
-namespace plb {
-
-template<typename T>
-TopoWriter<T>::TopoWriter(plint valueRange_)
-    : valueRange(valueRange_)
-{ }
-
-template<typename T>
-void TopoWriter<T>::writePpm (
-        std::string const& fName, bool colored,
-        MultiScalarField2D<T>& field) const
-{
-    global::profiler().start("io");
-    ScalarField2D<T> localField(field.getNx(), field.getNy());
-    copySerializedBlock(field, localField);
-    writePpmImplementation(fName, colored, localField);
-    global::profiler().stop("io");
-}
-
-template<typename T>
-void TopoWriter<T>::writePpm (
-        std::string const& fName, bool colored,
-        MultiScalarField3D<T>& field, int dir) const
-{
-    global::profiler().start("io");
-    plint nx=field.getNx();
-    plint ny=field.getNy();
-    plint nz=field.getNz();
-
-    if (dir == 0) {
-        ScalarField2D<T> localFieldX(ny,nz);
-        serializerToUnSerializer(
-                field.getBlockSerializer(layer(nx/2,ny,nz), IndexOrdering::forward),
-                localFieldX.getBlockUnSerializer(localFieldX.getBoundingBox(), IndexOrdering::forward) );
-        writePpmImplementation(fName, colored, localFieldX);
-    }
-    if (dir == 1) {
-        ScalarField2D<T> localFieldY(nx,nz);
-        serializerToUnSerializer(
-                field.getBlockSerializer(layer(nx,ny/2,nz), IndexOrdering::forward),
-                localFieldY.getBlockUnSerializer(localFieldY.getBoundingBox(), IndexOrdering::forward) );
-        writePpmImplementation(fName, colored, localFieldY);
-    }
-    if (dir == 2) {
-        ScalarField2D<T> localFieldZ(nx,ny);
-        serializerToUnSerializer(
-                field.getBlockSerializer(layer(nx,ny,nz/2), IndexOrdering::forward),
-                localFieldZ.getBlockUnSerializer(localFieldZ.getBoundingBox(), IndexOrdering::forward) );
-        writePpmImplementation(fName, colored, localFieldZ);
-    }
-    global::profiler().stop("io");
-}
-
-template<typename T>
-void TopoWriter<T>::writePpmImplementation (
-        std::string const& fName, bool colored,
-        ScalarField2D<T>& localField) const
-{
-    if (global::mpi().isMainProcessor()) {
-        T maxVal = computeMax(localField);
-        T minVal = computeMin(localField);
-        if (maxVal > valueRange || minVal < 0.) {
-            pcout << "ScalarField has values that exceed valueRange!" << endl
-                  << "maxVal = " << maxVal << ", minVal = " << minVal << endl
-                  << "No ppm written." << endl;
-            return;
-        }
-        std::string fullName;
-        if (colored)
-            fullName = global::directories().getImageOutDir() + fName+".ppm";
-        else
-            fullName = global::directories().getImageOutDir() + fName+".pgm";
-        std::ofstream fout(fullName.c_str());
-        if (colored) fout << "P3\n";
-        else         fout << "P2\n";
-        fout << localField.getNx() << " " << localField.getNy() << "\n";
-        fout << (valueRange-1) << "\n";
-
-        for (plint iY=localField.getNy()-1; iY>=0; --iY) {
-            for (plint iX=0; iX<localField.getNx(); ++iX) {
-                // create variables to hold rgb value for PPM export:
-                double red, green, blue;
-                // red always represents a flag value of topology
-                red = (double) (localField.get(iX,iY));
-
-                switch( (int)(red) ) {
-                    // however, some flags are too specific, and replaced with BB or bulk
-                    case flagSedimenting:  green=blue=red= flagBB;   break;
-                    // for these flags, colors are nice to spot them easily
-                    case flagEroding:      green= 255.; blue=red= 0.; break;
-                    case flagBuffer:       green= 0.; blue=   0.;    break;
-                    case flagConstraintBB: green= 0.; blue= 255.;    break;
-                    // BB and Bulk are not changed, rgb is all set to same value
-                    default: green=blue=red;
-                }
-
-                if (colored) {
-                    fout << (int) (red)   << " "
-                         << (int) (green) << " "
-                         << (int) (blue)  << "\n";
-                } else {
-                    fout << (int) (red)   << "\n"; // greyValue
-                }
-            }
-        }
-        fout.close();
-    }
-}
-
-template<typename T>
-void TopoWriter<T>::writeBinary (
-        std::string const& fName,
-        MultiScalarField3D<T>& field) const
-{
-    global::profiler().start("io");
-    plint nx=field.getNx();
-    plint ny=field.getNy();
-    plint nz=field.getNz();
-    ScalarField3D<T> localField(nx,ny,nz);
-    copySerializedBlock(field, localField);
-    writeBinaryImplementation(fName, localField);
-    global::profiler().stop("io");
-}
-
-template<typename T>
-void TopoWriter<T>::writeBinaryImplementation (
-        std::string const& fName,
-        ScalarField3D<T>& localField) const
-{
-    if (global::mpi().isMainProcessor()) {
-        T maxVal = computeMax(localField);
-        T minVal = computeMin(localField);
-        if (maxVal > valueRange || minVal < 0.) {
-            pcout << "ScalarField has values that exceed valueRange!" << endl
-                  << "maxVal = " << maxVal << ", minVal = " << minVal << endl
-                  << "No file written." << endl;
-            return;
-        }
-        std::string fullName;
-        fullName = global::directories().getImageOutDir() + fName+".binary";
-
-        std::ofstream fout(fullName.c_str(), std::ios::out | std::ios::binary);
-
-        for (plint iZ=0; iZ<localField.getNz(); ++iZ) {
-            //for (plint iY=localField.getNy()-1; iY>=0; --iY) {
-            for (plint iY=0; iY<localField.getNy(); ++iY) {
-                for (plint iX=0; iX<localField.getNx(); ++iX) {
-                    char value = localField.get(iX,iY,iZ);
-                    fout.write( (char*) &value, sizeof(value) );
-
-                    //T value = localField.get(iX,iY,iZ);
-                    //fout.write( (char*) &value, sizeof(T) );
-                }
-            }
-        }
-        fout.close();
-    }
-}
-}
-
-template<typename T>
-inRange<T>::inRange(T min_, T max_)
-    : min(min_), max(max_)
-{}
-template<typename T>
-bool inRange<T>::operator()(T value) const {
-    if (value < min || value > max)
-        return false;
-    else
-        return true;
-}
 
 template<typename T>
 bool isAnyNearestNeighbourValue2D(ScalarField2D<T> field, plint iX, plint iY, T value) {
@@ -553,6 +301,145 @@ inline std::string createLongFileName(std::string name, plint number, plint widt
     else
         fNameStream << name << std::setfill('0') << std::setw(width) << number << "_init";
     return fNameStream.str();
+}
+
+/* ******** MaskedReplaceAlphaFunctional3D ************************************** */
+// based on: MaskedBoxScalarMaxFunctional3D : public ReductiveBoxProcessingFunctional3D_SS<T,int>
+// in: dataAnalysisFunctional3D.h:512
+
+template<typename T1, typename T2>
+MaskedReplaceAlphaFunctional3D<T1,T2>::MaskedReplaceAlphaFunctional3D(T1 alpha_, std::vector<int>& flags_)
+      : alpha(alpha_),
+        flags(flags_)
+{ }
+
+template<typename T1, typename T2>
+MaskedReplaceAlphaFunctional3D<T1,T2>::MaskedReplaceAlphaFunctional3D(T1 alpha_, int flag_)
+      : alpha(alpha_)
+{ flags.push_back(flag_); }
+
+template<typename T1, typename T2>
+void MaskedReplaceAlphaFunctional3D<T1,T2>::process (
+        Box3D domain,
+        ScalarField3D<T1>& scalarField,
+        ScalarField3D<T2>& mask )
+{
+    Dot3D offset = computeRelativeDisplacement(scalarField, mask);
+    for (plint iX=domain.x0; iX<=domain.x1; ++iX) {
+        for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
+            for (plint iZ=domain.z0; iZ<=domain.z1; ++iZ) {
+                for (unsigned int i=0; i<flags.size(); i++) {
+                    if (mask.get(iX+offset.x, iY+offset.y, iZ+offset.z)==flags[i]) {
+                        scalarField.get(iX,iY,iZ) = alpha;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* ******** MaskedBoxScalarHistogramFunctional3D ******* */
+template<typename T, class BoolMask>
+void MaskedBoxScalarHistogramFunctional3D<T, BoolMask>::process (Box3D domain,
+                                                       ScalarField3D<T>& scalarField,
+                                                       ScalarField3D<int>& mask ) {
+    Dot3D offset = computeRelativeDisplacement(scalarField, mask);
+    BlockStatistics& statistics = this->getStatistics();
+    for (plint iX=domain.x0; iX<=domain.x1; ++iX) {
+        for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
+            for (plint iZ=domain.z0; iZ<=domain.z1; ++iZ) {
+                if (condition(mask.get(iX+offset.x, iY+offset.y, iZ+offset.z))) {
+                    statistics.gatherHistogram(histogramScalarId, (T)scalarField.get(iX,iY,iZ));
+                    statistics.incrementStats();
+                }
+            }
+        }
+    }
+}
+
+template<typename T, class BoolMask>
+std::vector<T> MaskedBoxScalarHistogramFunctional3D<T, BoolMask>::getHistogramScalar() const {
+    std::vector<T> histogram = this->getStatistics().getHistogram(histogramScalarId);
+    // The histogram is internally computed on floating-point values. If T is
+    //   integer, the value must be rounded at the end.
+    if (std::numeric_limits<T>::is_integer) {
+        return std::vector<T>(histogram.begin(), histogram.end());
+    }
+    return histogram;
+}
+
+/* ************* Class PseudomaskedSmoothen3D ******************* */
+
+template<typename T>
+void PseudomaskedSmoothen3D<T>::process(Box3D domain, ScalarField3D<T>& data, ScalarField3D<T>& result)
+{
+    Dot3D offset = computeRelativeDisplacement(data, result);
+    //T weightDiagonalNeighbour = .25;
+
+    for (plint iX=domain.x0; iX<=domain.x1; ++iX) {
+        for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
+            for (plint iZ=domain.z0; iZ<=domain.z1; ++iZ) {
+                T *res = &result.get(iX+offset.x, iY+offset.y, iZ+offset.z);
+                *res = data.get(iX,iY,iZ) * weightCentreCell ;
+                if (*res == 0.)
+                    continue; // skip this cell, because it's not part of fluid
+                float n = weightCentreCell;
+                for (int i = -1; i < 2; i++) {
+                    plint nextX = iX + i;
+                    for (int j = -1; j < 2; j++) {
+                        plint nextY = iY + j;
+                        for (int k = -1; k < 2; k++) {
+                            plint nextZ = iZ + k;
+                            if (!(i == 0 && j == 0 && k == 0)) {
+                                T currentCell = data.get(nextX, nextY, nextZ);
+                                if (currentCell != 0.) {
+                                    n+= weightDirectNeighbour;
+                                    *res += currentCell * weightDirectNeighbour;
+                                }
+                            }
+                        }
+                    }
+                }
+                *res /= (T) n;
+            }
+        }
+    }
+}
+
+template<typename T>
+PseudomaskedSmoothen3D<T>* PseudomaskedSmoothen3D<T>::clone() const
+{
+    return new PseudomaskedSmoothen3D<T>(*this);
+}
+
+template<typename T>
+void PseudomaskedSmoothen3D<T>::getTypeOfModification (std::vector<modif::ModifT>& modified) const
+{
+    modified[0] = modif::nothing;
+    modified[1] = modif::staticVariables;
+}
+
+/* *************** PseudomaskedSmoothen3D ******************************************* */
+
+template<typename T>
+void pseudomaskedSmoothen(MultiScalarField3D<T>& data, MultiScalarField3D<T>& result, Box3D domain, T weightDirectNeighbour)
+{
+    applyProcessingFunctional(new PseudomaskedSmoothen3D<T>(weightDirectNeighbour), domain, data, result);
+}
+
+template<typename T>
+std::auto_ptr<MultiScalarField3D<T> > pseudomaskedSmoothen(MultiScalarField3D<T>& data, Box3D domain, T weightDirectNeighbour)
+{
+    std::auto_ptr<MultiScalarField3D<T> > result =
+        generateMultiScalarField<T>(data, domain);
+    pseudomaskedSmoothen<T>(data, *result, domain, weightDirectNeighbour);
+    return result;
+}
+
+template<typename T>
+std::auto_ptr<MultiScalarField3D<T> > pseudomaskedSmoothen(MultiScalarField3D<T>& data, T weightDirectNeighbour)
+{
+    return pseudomaskedSmoothen<T>(data, data.getBoundingBox(), weightDirectNeighbour);
 }
 
 

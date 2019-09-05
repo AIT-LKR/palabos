@@ -1,13 +1,8 @@
-#include <memory>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <chrono>
-#include <random>
-#include <sys/stat.h>
-
 #ifndef TOOLS_FILES_H
 #define TOOLS_FILES_H
+
+#include <string>
+
 
 using namespace std;
 

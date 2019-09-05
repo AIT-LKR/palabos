@@ -1,22 +1,14 @@
+#ifndef TOOLS_PLB_H
+#define TOOLS_PLB_H
+
 #include <../src/core/globalDefs.h>
 #include <../src/io/parallelIO.h>
 #include <../externalLibraries/tinyxml/tinyxml.h>
 
-#include <memory>
 #include <string>
-#include <sstream>
 #include <vector>
-#include <chrono>
 #include <random>
 
-#include "./tools.h"
-#include "./tools.hh"
-#include "./plb_physicalFlowParam.h"
-
-typedef double T;
-
-#ifndef TOOLS_PLB_H
-#define TOOLS_PLB_H
 
 using namespace std;
 using namespace plb;
@@ -26,78 +18,15 @@ void renameAllExisting(string outDir, string fileName);
 
 bool copyFile(string sourceName, string destinationName);
 
-void readFile(std::vector<std::vector<T>> vecs, std::string name);
-
 void rewriteOutputFile(std::string data, std::string fileName);
 
 void appendOutputFile(std::string data, std::string fileName);
-
-
-template<typename T>
-class PoiseuilleVelocity {
-    public:
-        PoiseuilleVelocity(T uLB_, T uDev_, plint powerPoiseuilleVel_, char dir_,
-                plint inletCentre_, plint inletRadius_);
-        PoiseuilleVelocity(T uLB_, T uDev_, plint powerPoiseuilleVel_, char dir_,
-                plint inletCentreA_, plint inletCentreB_, plint inletRadius_);
-        void operator()(plint iX, plint iY, Array<T,2>& u) const;
-        void operator()(plint iX, plint iY, plint iZ, Array<T,3>& u) const;
-    private:
-        T uLB;
-        T uDev;
-        plint powerPoiseuilleVel;
-        char dir;
-        plint inletCentreA;
-        plint inletCentreB;
-        plint inletRadius;
-        unsigned seed;
-        std::default_random_engine* generator;
-        std::normal_distribution<>* main_distribution;
-        std::normal_distribution<>* side_distribution;
-};
 
 
 Box3D layer(plint Nx, plint Ny, plint i) {
     // create slice with width=Nx, length=Ny, height=1
     return Box3D(0,Nx-1, 0,Ny-1, i,i);
 }
-
-// inspired by src/io/imageWriter.h
-namespace plb {
-template<typename T>
-class TopoWriter {
-public:
-    TopoWriter(plint valueRange_);
-    void writePpm(
-        std::string const& fName, bool colored,
-        MultiScalarField2D<T>& field) const;
-    void writePpm (
-        std::string const& fName, bool colored,
-        MultiScalarField3D<T>& field, int dir=2) const;
-    void writeBinary(
-        std::string const& fName,
-        MultiScalarField3D<T>& field) const;
-
-private:
-    void writePpmImplementation (
-        std::string const& fName, bool colored,
-        ScalarField2D<T>& localField) const;
-    void writeBinaryImplementation (
-        std::string const& fName,
-        ScalarField3D<T>& localField) const;
-private:
-    plint valueRange;
-};
-}
-
-template<typename T>
-class inRange{
-public:
-    inRange(T min_, T max_);
-    bool operator()(T value) const;
-private:
-    T min, max;
-};
 
 template<typename T>
 bool isAnyNearestNeighbourValue2D(ScalarField2D<T> field,
@@ -162,6 +91,81 @@ public:
 private:
     T alpha;
 };
+
+/* ******** MaskedReplaceAlphaFunctional3D ************************************** */
+// based on: MaskedBoxScalarMaxFunctional3D : public ReductiveBoxProcessingFunctional3D_SS<T,int>
+// in: dataAnalysisFunctional3D.h:512
+template<typename T1, typename T2>
+class MaskedReplaceAlphaFunctional3D : public plb::ReductiveBoxProcessingFunctional3D_SS<T1, T2>
+{
+public:
+    MaskedReplaceAlphaFunctional3D(T1 alpha_, std::vector<int>& flags_);
+    MaskedReplaceAlphaFunctional3D(T1 alpha_, int flag_);
+    virtual void process( Box3D domain,
+                          ScalarField3D<T1>& scalarField,
+                          ScalarField3D<T2>& mask );
+    virtual MaskedReplaceAlphaFunctional3D<T1,T2>* clone() const {
+        return new MaskedReplaceAlphaFunctional3D<T1,T2>(*this); }
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const {
+        modified[0] = modif::staticVariables;
+        modified[1] = modif::nothing;
+    }
+private:
+    T1 alpha;
+    std::vector<int> flags;
+};
+
+/* ******** MaskedBoxScalarHistogramFunctional3D ******* */
+template<typename T, class BoolMask>
+class MaskedBoxScalarHistogramFunctional3D : public ReductiveBoxProcessingFunctional3D_SS<T,int> {
+public:
+    MaskedBoxScalarHistogramFunctional3D(BoolMask condition_)
+        : histogramScalarId(this->getStatistics().subscribeHistogram()),
+          condition(condition_) { }
+    void process ( Box3D domain,
+                   ScalarField3D<T>& scalarField,
+                   ScalarField3D<int>& mask );
+    MaskedBoxScalarHistogramFunctional3D<T,BoolMask>* clone() const {
+        return new MaskedBoxScalarHistogramFunctional3D<T,BoolMask>(*this);
+    }
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const {
+        modified[0] = modif::nothing;
+        modified[1] = modif::nothing;
+    }
+    std::vector<T> getHistogramScalar() const;
+private:
+    plint histogramScalarId;
+    BoolMask condition;
+};
+
+/* *************** PseudomaskedSmoothen3D ******************************************* */
+
+template<typename T>
+class PseudomaskedSmoothen3D : public BoxProcessingFunctional3D_SS<T,T> {
+public:
+    PseudomaskedSmoothen3D(T weightDirectNeighbour_)
+        : weightDirectNeighbour(weightDirectNeighbour_),
+          weightCentreCell(1.) { }
+    virtual void process(Box3D domain, ScalarField3D<T>& data, ScalarField3D<T>& result);
+    virtual PseudomaskedSmoothen3D<T>* clone() const;
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const;
+private:
+    T weightDirectNeighbour;
+    T weightCentreCell;
+};
+
+
+/* *************** PseudomaskedSmoothen3D ******************************************* */
+// This is a "bulk" version. It has no special boundary treatment.
+
+template<typename T>
+void pseudomaskedSmoothen(MultiScalarField3D<T>& data, MultiScalarField3D<T>& result, Box3D domain, T weightDirectNeighbour);
+
+template<typename T>
+std::auto_ptr<MultiScalarField3D<T> > pseudomaskedSmoothen(MultiScalarField3D<T>& data, Box3D domain, T weightDirectNeighbour);
+
+template<typename T>
+std::auto_ptr<MultiScalarField3D<T> > pseudomaskedSmoothen(MultiScalarField3D<T>& data, T weightDirectNeighbour);
 
 
 #endif

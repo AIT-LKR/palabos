@@ -1,17 +1,10 @@
-#include <memory>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <chrono>
-#include <random>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
-#include <unordered_map>
-#include <math.h>       /* sqrt */
-
 #ifndef TOOLS_H
 #define TOOLS_H
+
+#include <string>
+#include <vector>
+#include <unordered_map>
+
 
 using namespace std;
 
@@ -56,15 +49,8 @@ class randNumber {
 template<typename T1, typename T2>
 T2 rampVelocity(T2 vel, T1 currentTime, T1 timeMax);
 
-/// Velocity on the parabolic Poiseuille profile
-template<typename T1, typename T2>
-T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius);
-
-
 template<typename T>
 T getGradient(T firstValue, T secondValue, T step);
-
-bool correctArguments(const int argc, char const* const* argv);
 
 class belowThresholdCounter {
     public:
@@ -84,6 +70,15 @@ void addToAverage(T1& average, T1 newValue, T2& n) {
 
     average = oneOverN * (nMinusOne * average + newValue);
 }
+
+template<typename T>
+class inRange{
+public:
+    inRange(T min_, T max_);
+    bool operator()(T value) const;
+private:
+    T min, max;
+};
 
 
 #endif

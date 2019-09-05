@@ -1,20 +1,10 @@
-#include <memory>
-#include <string>
-#include <sstream>
+#ifndef TOOLS_GEOMETRIC_HH
+#define TOOLS_GEOMETRIC_HH
+
 #include <vector>
-#include <chrono>
-#include <random>
-#include <iostream>
-#include <iterator>
-#include <algorithm>
-#include <iterator>
-#include <unordered_map>
 #include <math.h>       /* sqrt */
 
 #include "./tools_geometric.h"
-
-#ifndef TOOLS_GEOMETRIC_HH
-#define TOOLS_GEOMETRIC_HH
 
 using namespace std;
 
@@ -206,5 +196,95 @@ T2 diameterFromSphereVolume(T1 volume) {
     return diameter;
 }
 
+/// Velocity on the parabolic Poiseuille profile
+template<typename T1, typename T2>
+T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius) {
+    // r_dash represents shift from zero to new inletCentre and scaling to
+    // a parabola across inlet
+    T2 r_dash = T2(r)/inletRadius;
+    if (r_dash > 1.) return 0;
+    T2 r_dash_sqr = pow( r_dash, powerPoiseuilleVel);
+    T2 vel = -1*uMax*( r_dash_sqr - 1);
+    return vel;
+}
+
+/* **************************************************************************** */
+
+template<typename T1, typename T2>
+PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
+        T1 inletCentre_, T1 inletRadius_)
+    : uLB(uLB_), uDev(uDev_), powerPoiseuilleVel(powerPoiseuilleVel_), dir(dir_),
+     inletCentreA(inletCentre_), inletCentreB(-1), inletRadius(inletRadius_),
+     seed(std::chrono::system_clock::now().time_since_epoch().count())
+{
+    // random number generator
+    generator = new std::default_random_engine(seed);
+    main_distribution = new std::normal_distribution<T2>(uLB-uDev, uDev);
+    side_distribution = new std::normal_distribution<T2>(0., uDev);
+}
+
+template<typename T1, typename T2>
+PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
+        T1 inletCentreA_, T1 inletCentreB_, T1 inletRadius_)
+    : uLB(uLB_), uDev(uDev_), powerPoiseuilleVel(powerPoiseuilleVel_), dir(dir_),
+      inletCentreA(inletCentreA_), inletCentreB(inletCentreB_), inletRadius(inletRadius_),
+      seed(std::chrono::system_clock::now().time_since_epoch().count())
+{
+    // random number generator
+    generator = new std::default_random_engine(seed);
+    main_distribution = new std::normal_distribution<T2>(uLB-uDev, uDev);
+    side_distribution = new std::normal_distribution<T2>(0., uDev);
+}
+
+template<typename T1, typename T2>
+void PoiseuilleVelocity<T1,T2>::operator()(T1 iX, T1 iY, T1 iZ, Array<T2,3>& u) const {
+    T2 main_velocity = uLB;
+    T2 side_velocity = 0.;
+    T2 down_velocity = 0.;
+    if (uDev) {
+        main_velocity = (*main_distribution)(*generator);
+        side_velocity = (*side_distribution)(*generator)/4;
+        down_velocity = (*side_distribution)(*generator)/4;
+    }
+    T1 r;
+
+    if (dir == 'x') {
+        if (inletCentreB == -1)
+            r = distanceFromPoint<T2>(iY,iZ, inletCentreA,iZ);
+        else
+            r = distanceFromPoint<T2>(iY,iZ, inletCentreA,inletCentreB);
+        u[0] = poiseuilleVelocity(r, main_velocity, powerPoiseuilleVel, inletRadius);
+        u[1] = side_velocity;
+        u[2] = down_velocity;
+    }
+    if (dir == 'y') {
+        if (inletCentreB == -1)
+            r = distanceFromPoint<T2>(iX,iZ, inletCentreA,iZ);
+        else
+            r = distanceFromPoint<T2>(iX,iZ, inletCentreA,inletCentreB);
+        u[0] = side_velocity;
+        u[1] = poiseuilleVelocity(r, main_velocity, powerPoiseuilleVel, inletRadius);
+        u[2] = down_velocity;
+    }
+}
+
+template<typename T1, typename T2>
+void PoiseuilleVelocity<T1,T2>::operator()(T1 iX, T1 iY, Array<T2,2>& u) const {
+    T2 main_velocity = uLB;
+    T2 side_velocity = 0.;
+    if (uDev) {
+        main_velocity = (*main_distribution)(*generator);
+        side_velocity = (*side_distribution)(*generator)/2;
+    }
+
+    if( dir == 'x' ) {
+        u[0] = poiseuilleVelocity(iY-inletCentreA, main_velocity, powerPoiseuilleVel, inletRadius);
+        u[1] = side_velocity;
+    }
+    if( dir == 'y' ) {
+        u[0] = side_velocity;
+        u[1] = poiseuilleVelocity(iX-inletCentreA, main_velocity, powerPoiseuilleVel, inletRadius);
+    }
+}
 
 #endif

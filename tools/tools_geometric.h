@@ -1,19 +1,11 @@
-#include <memory>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <chrono>
-#include <random>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
-#include <unordered_map>
-#include <math.h>       /* sqrt */
-
 #ifndef TOOLS_GEOMETRIC_H
 #define TOOLS_GEOMETRIC_H
 
+#include <vector>
+
+
 using namespace std;
+
 
 template<typename T>
 bool isInCircle(T x,T y, T rSq, T cX,T cY);
@@ -65,6 +57,33 @@ std::vector<T2> calculateCOM(std::vector<std::vector<T1>> coordinates);
 
 template<typename T1, typename T2>
 T2 diameterFromSphereVolume(T1 volume);
+
+/// Velocity on the parabolic Poiseuille profile
+template<typename T1, typename T2>
+T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius);
+
+template<typename T1, typename T2>
+class PoiseuilleVelocity {
+    public:
+        PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
+                T1 inletCentre_, T1 inletRadius_);
+        PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
+                T1 inletCentreA_, T1 inletCentreB_, T1 inletRadius_);
+        void operator()(T1 iX, T1 iY, Array<T2,2>& u) const;
+        void operator()(T1 iX, T1 iY, T1 iZ, Array<T2,3>& u) const;
+    private:
+        T2 uLB;
+        T2 uDev;
+        T1 powerPoiseuilleVel;
+        char dir;
+        T1 inletCentreA;
+        T1 inletCentreB;
+        T1 inletRadius;
+        unsigned seed;
+        std::default_random_engine* generator;
+        std::normal_distribution<>* main_distribution;
+        std::normal_distribution<>* side_distribution;
+};
 
 
 #endif
