@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <iterator>
 
 #include "../tools/tools.h"
 
