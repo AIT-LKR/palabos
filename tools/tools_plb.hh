@@ -13,6 +13,8 @@
 
 #include "./tools.h"
 #include "./tools.hh"
+#include "./tools_geometric.h"
+#include "./tools_geometric.hh"
 #include "./tools_files.h"
 #include "./tools_files.hh"
 #include "./plb_physicalFlowParam.h"
