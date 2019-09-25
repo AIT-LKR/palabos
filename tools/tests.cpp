@@ -652,3 +652,26 @@ TEST_CASE( "calculate diameterFromSphereVolume", "[!hide]" ) {
     }
 }
 
+
+TEST_CASE( "rotate coordinates") {
+
+    SECTION( "angle=0deg" ) {
+        float x=1, y=0;
+        std::vector<float> rotated = rotate(x,y,0.);
+        float x_dash = rotated[0];
+        float y_dash = rotated[1];
+
+        REQUIRE( x_dash == 1. );
+        REQUIRE( y_dash == 0. );
+    }
+    SECTION( "angle=90deg" ) {
+        float x=1, y=0;
+        std::vector<float> rotated = rotate(x,y,-1*M_PI/2);
+        float x_dash = rotated[0];
+        float y_dash = rotated[1];
+
+        Catch::StringMaker<float>::precision = 15;
+        //REQUIRE( x_dash == Approx(0) );
+        REQUIRE( y_dash == Approx(1) );
+    }
+}

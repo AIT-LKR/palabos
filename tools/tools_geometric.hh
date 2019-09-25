@@ -208,4 +208,12 @@ T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius) {
     return vel;
 }
 
+std::vector<float> rotate(float x, float y, float angle) {
+    float x_dash = cos(angle)*x + sin(angle)*y;
+    float y_dash = -1*sin(angle)*x + cos(angle)*y;
+    std::vector<float> rotatedCoords = {x_dash,y_dash};
+    return rotatedCoords;
+}
+
+
 #endif

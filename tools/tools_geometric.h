@@ -62,5 +62,6 @@ T2 diameterFromSphereVolume(T1 volume);
 template<typename T1, typename T2>
 T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius);
 
+std::vector<float> rotate(float x, float y, float angle);
 
 #endif
