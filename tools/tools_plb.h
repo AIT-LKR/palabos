@@ -167,5 +167,28 @@ std::auto_ptr<MultiScalarField3D<T> > pseudomaskedSmoothen(MultiScalarField3D<T>
 template<typename T>
 std::auto_ptr<MultiScalarField3D<T> > pseudomaskedSmoothen(MultiScalarField3D<T>& data, T weightDirectNeighbour);
 
+template<typename T1, typename T2>
+class PoiseuilleVelocity {
+    public:
+        PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
+                T1 inletCentre_, T1 inletRadius_);
+        PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
+                T1 inletCentreA_, T1 inletCentreB_, T1 inletRadius_);
+        void operator()(T1 iX, T1 iY, Array<T2,2>& u) const;
+        void operator()(T1 iX, T1 iY, T1 iZ, Array<T2,3>& u) const;
+    private:
+        T2 uLB;
+        T2 uDev;
+        T1 powerPoiseuilleVel;
+        char dir;
+        T1 inletCentreA;
+        T1 inletCentreB;
+        T1 inletRadius;
+        unsigned seed;
+        std::default_random_engine* generator;
+        std::normal_distribution<>* main_distribution;
+        std::normal_distribution<>* side_distribution;
+};
+
 
 #endif
