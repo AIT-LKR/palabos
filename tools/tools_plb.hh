@@ -523,5 +523,33 @@ void PoiseuilleVelocity<T1,T2>::operator()(T1 iX, T1 iY, Array<T2,2>& u) const {
     }
 }
 
+/// extract middle layer from 3D
+template<typename T>
+ScalarField2D<T> extractMiddleLayer(MultiScalarField3D<T>& field3D, int dir) {
+    plint Nx = field3D.getNx();
+    plint Ny = field3D.getNy();
+    plint Nz = field3D.getNz();
+
+    plint nx=Nx,ny=Ny; // default values (dir=2) corresponds to z=const.
+    Box3D middle = layer(Nx,Ny,Nz/2);
+
+    if (dir == 0) {
+        nx=Ny;
+        ny=Nz;
+        middle = layer(Nx/2,Ny,Nz);
+    } else if (dir == 1) {
+        nx=Nx;
+        ny=Nz;
+        middle = layer(Nx,Ny/2,Nz);
+    }
+
+    ScalarField2D<T> field2D(nx,ny);
+    serializerToUnSerializer(
+            field3D.getBlockSerializer(middle, IndexOrdering::forward),
+            field2D.getBlockUnSerializer(field2D.getBoundingBox(), IndexOrdering::forward) );
+    return field2D;
+}
+
+
 
 #endif

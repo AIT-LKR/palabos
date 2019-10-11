@@ -190,5 +190,8 @@ class PoiseuilleVelocity {
         std::normal_distribution<>* side_distribution;
 };
 
+template<typename T>
+ScalarField2D<T> extractMiddleLayer(MultiScalarField3D<T>& field3D, int dir=2);
+
 
 #endif
