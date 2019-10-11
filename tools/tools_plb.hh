@@ -523,6 +523,52 @@ void PoiseuilleVelocity<T1,T2>::operator()(T1 iX, T1 iY, Array<T2,2>& u) const {
     }
 }
 
+ /* ************* Class OwnUpdateAveScalarTransientStatistics3D ******************* */
+
+ template<typename T>
+ OwnUpdateAveScalarTransientStatistics3D<T>::OwnUpdateAveScalarTransientStatistics3D(plint n_)
+     : n(n_)
+ { }
+
+ template<typename T>
+ void OwnUpdateAveScalarTransientStatistics3D<T>::process(Box3D domain, ScalarField3D<T> &scalar, ScalarField3D<T> &avg)
+ {
+     Dot3D offset = computeRelativeDisplacement(scalar, avg);
+
+     T nMinusOne = (T) n - (T) 1;
+     T oneOverN = (T) 1 / (T) n;
+
+     for (plint iX = domain.x0; iX <= domain.x1; iX++) {
+         for (plint iY = domain.y0; iY <= domain.y1; iY++) {
+             for (plint iZ = domain.z0; iZ <= domain.z1; iZ++) {
+                 avg.get(iX + offset.x, iY + offset.y, iZ + offset.z) = oneOverN *
+                     (nMinusOne * avg.get(iX + offset.x, iY + offset.y, iZ + offset.z) + scalar.get(iX, iY, iZ));
+             }
+         }
+     }
+     ++n;
+ }
+
+ template<typename T>
+ OwnUpdateAveScalarTransientStatistics3D<T>* OwnUpdateAveScalarTransientStatistics3D<T>::clone() const
+ {
+     return new OwnUpdateAveScalarTransientStatistics3D<T>(*this);
+ }
+
+ template<typename T>
+ void OwnUpdateAveScalarTransientStatistics3D<T>::getTypeOfModification(std::vector<modif::ModifT>& modified) const
+ {
+     modified[0] = modif::nothing;           // Scalar field.
+     modified[1] = modif::staticVariables;   // Statistics field.
+ }
+
+ template<typename T>
+ BlockDomain::DomainT OwnUpdateAveScalarTransientStatistics3D<T>::appliesTo() const
+ {
+     return BlockDomain::bulk;
+ }
+
+
 /// extract middle layer from 3D
 template<typename T>
 ScalarField2D<T> extractMiddleLayer(MultiScalarField3D<T>& field3D, int dir) {

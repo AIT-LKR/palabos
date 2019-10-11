@@ -190,6 +190,19 @@ class PoiseuilleVelocity {
         std::normal_distribution<>* side_distribution;
 };
 
+ template<typename T>
+ class OwnUpdateAveScalarTransientStatistics3D : public BoxProcessingFunctional3D_SS<T,T>
+ {
+ public:
+     OwnUpdateAveScalarTransientStatistics3D(plint n_);
+     virtual void process(Box3D domain, ScalarField3D<T> &scalar, ScalarField3D<T> &avg);
+     virtual OwnUpdateAveScalarTransientStatistics3D<T>* clone() const;
+     virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const;
+     virtual BlockDomain::DomainT appliesTo() const;
+ private:
+     plint n;
+ };
+
 template<typename T>
 ScalarField2D<T> extractMiddleLayer(MultiScalarField3D<T>& field3D, int dir=2);
 
