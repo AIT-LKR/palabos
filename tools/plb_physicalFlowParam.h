@@ -59,6 +59,8 @@ public:
 
     /// conversion from physical to dimensionless units for time coordinate
     T dimlessTime (T phTime) const   { return phTime / getPhysicalT(); }
+    /// conversion from lattice units to dimensionless for time coordinate
+    T stepToDimless(plint iT) const  { return iT*(T)getDeltaT(); }
     /// conversion from physical to lattice units for time coordinate
     plint phStep(T phTime) const   { return nStep(dimlessTime(phTime));        }
     /// conversion from dimensionless to lattice units for time coordinate
