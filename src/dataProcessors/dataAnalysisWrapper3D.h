@@ -440,6 +440,13 @@ void extractComponent(TensorField3D<T,nDim>& tensorField, ScalarField3D<T>& comp
 template<typename T, int nDim>
 std::auto_ptr<ScalarField3D<T> > extractComponent(TensorField3D<T,nDim>& tensorField, int iComponent);
 
+/* *************** Component (scalar-field) into a tensor-field ****** */
+
+template<typename T, int nDim>
+void insertComponent(TensorField3D<T,nDim>& tensorField, ScalarField3D<T>& component, Box3D domain, int iComponent);
+
+template<typename T, int nDim>
+void insertComponent(TensorField3D<T,nDim>& tensorField, ScalarField3D<T>& component, int iComponent);
 
 /* *************** Copy-convert a tensor-field *************** */
 
@@ -1801,6 +1808,15 @@ std::auto_ptr<MultiScalarField3D<T> > extractComponent(MultiTensorField3D<T,nDim
 
 template<typename T, int nDim>
 std::auto_ptr<MultiScalarField3D<T> > extractComponent(MultiTensorField3D<T,nDim>& tensorField, int iComponent);
+
+
+/* *************** Component (scalar-field) into a tensor-field ****** */
+
+template<typename T, int nDim>
+void insertComponent(MultiTensorField3D<T,nDim>& tensorField, MultiScalarField3D<T>& component, Box3D domain, int iComponent);
+
+template<typename T, int nDim>
+void insertComponent(MultiTensorField3D<T,nDim>& tensorField, MultiScalarField3D<T>& component, int iComponent);
 
 
 /* *************** Vector-norm of each cell in the field *************** */

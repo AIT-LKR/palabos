@@ -1655,6 +1655,21 @@ private:
 };
 
 template<typename T, int nDim>
+class InsertTensorComponentFunctional3D :
+    public BoxProcessingFunctional3D_ST<T,T,nDim>
+{
+public:
+    InsertTensorComponentFunctional3D(int iComponent_);
+    virtual void process(Box3D domain, ScalarField3D<T>& scalarField,
+                                       TensorField3D<T,nDim>& tensorField );
+    virtual InsertTensorComponentFunctional3D<T,nDim>* clone() const;
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const;
+    virtual BlockDomain::DomainT appliesTo() const;
+private:
+    int iComponent;
+};
+
+template<typename T, int nDim>
 class ComputeNormFunctional3D : public BoxProcessingFunctional3D_ST<T,T,nDim>
 {
 public:

@@ -857,6 +857,22 @@ std::auto_ptr<ScalarField3D<T> > extractComponent(TensorField3D<T,nDim>& tensorF
     return std::auto_ptr<ScalarField3D<T> >(component);
 }
 
+/* *************** Component (scalar-field) into a tensor-field ****** */
+
+template<typename T, int nDim>
+void insertComponent(TensorField3D<T,nDim>& tensorField, ScalarField3D<T>& component, int iComponent)
+{
+    insertComponent(tensorField, component, component.getBoundingBox(), iComponent);
+}
+
+template<typename T, int nDim>
+void insertComponent(TensorField3D<T,nDim>& tensorField, ScalarField3D<T>& component, Box3D domain, int iComponent)
+{
+    applyProcessingFunctional (
+            new InsertTensorComponentFunctional3D<T,nDim>(iComponent), domain, component, tensorField );
+}
+
+
 
 /* *************** Vector-norm of each cell in the field *************** */
 
@@ -3949,6 +3965,22 @@ template<typename T, int nDim>
 std::auto_ptr<MultiScalarField3D<T> > extractComponent(MultiTensorField3D<T,nDim>& tensorField, int iComponent)
 {
     return extractComponent(tensorField, tensorField.getBoundingBox(), iComponent);
+}
+
+
+/* *************** Component (scalar-field) into a tensor-field ****** */
+
+template<typename T, int nDim>
+void insertComponent(MultiTensorField3D<T,nDim>& tensorField, MultiScalarField3D<T>& component, Box3D domain, int iComponent)
+{
+    applyProcessingFunctional (
+            new InsertTensorComponentFunctional3D<T,nDim>(iComponent), domain, component, tensorField );
+}
+
+template<typename T, int nDim>
+void insertComponent(MultiTensorField3D<T,nDim>& tensorField, MultiScalarField3D<T>& component, int iComponent)
+{
+    insertComponent(tensorField, component, component.getBoundingBox(), iComponent);
 }
 
 

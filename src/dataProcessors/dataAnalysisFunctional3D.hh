@@ -5001,6 +5001,47 @@ BlockDomain::DomainT ExtractTensorComponentFunctional3D<T,nDim>::appliesTo() con
 
 
 template<typename T, int nDim>
+InsertTensorComponentFunctional3D<T,nDim>::InsertTensorComponentFunctional3D(int iComponent_)
+    : iComponent(iComponent_)
+{
+    PLB_ASSERT( iComponent<nDim );
+}
+
+template<typename T, int nDim>
+void InsertTensorComponentFunctional3D<T,nDim>::process (
+        Box3D domain, ScalarField3D<T>& scalarField,
+                      TensorField3D<T,nDim>& tensorField )
+{
+    Dot3D offset = computeRelativeDisplacement(scalarField, tensorField);
+    for (plint iX=domain.x0; iX<=domain.x1; ++iX) {
+        for (plint iY=domain.y0; iY<=domain.y1; ++iY) {
+            for (plint iZ=domain.z0; iZ<=domain.z1; ++iZ) {
+                tensorField.get(iX,iY,iZ)[iComponent]
+                    = scalarField.get(iX+offset.x,iY+offset.y,iZ+offset.z);
+            }
+        }
+    }
+}
+
+template<typename T, int nDim>
+InsertTensorComponentFunctional3D<T,nDim>* InsertTensorComponentFunctional3D<T,nDim>::clone() const
+{
+    return new InsertTensorComponentFunctional3D<T,nDim>(*this);
+}
+
+template<typename T, int nDim>
+void InsertTensorComponentFunctional3D<T,nDim>::getTypeOfModification(std::vector<modif::ModifT>& modified) const {
+    modified[0] = modif::nothing;
+    modified[1] = modif::staticVariables;
+}
+
+template<typename T, int nDim>
+BlockDomain::DomainT InsertTensorComponentFunctional3D<T,nDim>::appliesTo() const {
+    return BlockDomain::bulk;
+}
+
+
+template<typename T, int nDim>
 void ComputeNormFunctional3D<T,nDim>::process (
         Box3D domain, ScalarField3D<T>& scalarField,
                       TensorField3D<T,nDim>& tensorField )
