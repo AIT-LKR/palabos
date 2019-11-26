@@ -91,6 +91,20 @@ namespace descriptors
         static const char name[];
     };
     
+    /// AD D2Q9 lattice
+    template <typename T> struct AdvectionDiffusionD2Q9Descriptor
+        : public D2Q9DescriptorBase<T>, public Velocity2dDescriptorBase
+    {
+        static const char name[];
+    };
+    
+    
+    template <typename T> struct AdvectionDiffusionWithSourceD2Q9Descriptor 
+    : public D2Q9DescriptorBase<T>, public VelocityAndScalar2dBase
+    {
+        static const char name[];
+    };
+    
     /// D3Q7 lattice
     template <typename T> struct D3Q7Constants {
         enum { d = 3, q = 7 };     ///< number of dimensions/distr. functions

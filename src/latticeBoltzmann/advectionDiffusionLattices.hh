@@ -82,6 +82,15 @@ namespace descriptors {
     template<typename T>
     const char AdvectionDiffusionWithSourceD2Q5Descriptor<T>::name[] = "AdvectionDiffusionWithSourceD2Q5";
 
+
+//     // AdvectionDiffusion D2Q9 //////////////////////////////////////////////
+ 
+    template<typename T>
+    const char AdvectionDiffusionD2Q9Descriptor<T>::name[] = "AdvectionDiffusionD2Q9";
+
+    template<typename T>
+    const char AdvectionDiffusionWithSourceD2Q9Descriptor<T>::name[] = "AdvectionDiffusionWithSourceD2Q9";
+
         
     // AdvectionDiffusion D3Q7 ////////////////////////////////////////////////////
 
