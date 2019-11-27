@@ -60,6 +60,27 @@ private:
     std::vector<T> imposedOmega;
 };
 
+/// Shan-Chen coupling for miscible multi-component / multi-phase advection diffusion with or without external force
+template<typename T, template<typename U> class Descriptor>
+class ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D :
+    public LatticeBoxProcessingFunctional2D<T,Descriptor>
+{
+public:
+    /// With these constructors, space- and time-dependent values of the
+    ///   relaxation parameters omega are accounted for.
+//     ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D(std::vector<std::vector<T> > const& speciesG_);
+    /// With these constructors, the values of the relaxation parameters omega are
+    ///   taken to be species-dependent, but not space- or time-dependent. Their
+    ///   value is imposed in the constructor.
+    ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D(std::vector<T> const& imposedOmega_);
+    // ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D(std::vector<T> const& imposedOmega_);
+    virtual void process(Box2D domain, std::vector<BlockLattice2D<T,Descriptor>*> lattices );
+    virtual ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D<T,Descriptor>* clone() const;
+    virtual void getTypeOfModification(std::vector<modif::ModifT>& modified) const;
+private:
+    std::vector<T> imposedOmega;
+};
+
 /// Shan-Chen coupling for single-component flow with or without external force
 template<typename T, template<typename U> class Descriptor>
 class ShanChenSingleComponentProcessor2D : public BoxProcessingFunctional2D_L<T,Descriptor> {
