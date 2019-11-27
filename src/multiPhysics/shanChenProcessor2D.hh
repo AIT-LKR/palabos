@@ -223,21 +223,6 @@ void ShanChenMultiComponentProcessor2D<T,Descriptor>::getTypeOfModification(std:
 
 /* *************** ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D ***************** */
 
-// template<typename T, template<typename U> class Descriptor>
-// ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D <T,Descriptor>::ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D(
-//         std::vector<std::vector<T> > const& speciesG_)
-// {
-//     pluint numSpecies = speciesG_.size();
-//     // Although speciesG_ has a 2D "matrix structure", speciesG has a 1D "array structure".
-//     speciesG.resize(numSpecies * numSpecies);
-//     for (pluint iSpecies = 0; iSpecies < numSpecies; iSpecies++) {
-//         PLB_ASSERT(speciesG_[iSpecies].size() == numSpecies);
-//         for (pluint jSpecies = 0; jSpecies < numSpecies; jSpecies++) {
-//             speciesG[iSpecies * numSpecies + jSpecies] = speciesG_[iSpecies][jSpecies];
-//         }
-//     }
-// }
-
 template<typename T, template<typename U> class Descriptor>
 ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D <T,Descriptor>::ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D (
         std::vector<T> const& imposedOmega_)
@@ -254,42 +239,14 @@ void ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D<T,Descriptor>::
     plint numSpecies = (plint) lattices.size();
     // Short-hand notation for the lattice descriptor
     typedef Descriptor<T> D;
-    // Handle to external scalars
-    // enum {
-    //     densityOffset  = D::ExternalField::densityBeginsAt,
-    //     momentumOffset = D::ExternalField::momentumBeginsAt
-    // };
     const int velOffset = D::ExternalField::velocityBeginsAt;
     
-    // Compute per-lattice density  and momentum on every site and on each
-    //   lattice, and store result in external scalars;  envelope cells are included,
-    //   because they are needed to compute the interaction potential in the following.
-    //   Note that the per-lattice value of the momentum is stored temporarily only, as
-    //   it is corrected later on, based on the common fluid velocity.
-//     for (plint iSpecies=0; iSpecies<numSpecies; ++iSpecies) {
-//         for (plint iX=domain.x0-1; iX<=domain.x1+1; ++iX) {
-//             for (plint iY=domain.y0-1; iY<=domain.y1+1; ++iY) {
-//                 // Get "intelligent" value of density through cell object, to account
-//                 //   for the fact that the density value can be user-defined, for example
-//                 //   on boundaries.
-//                 Cell<T,Descriptor>& cell = lattices[iSpecies]->get(iX,iY);
-//                 Array<T,Descriptor<T>::d> j;
-//                 T rhoBar;
-//                 cell.getDynamics().computeRhoBarJ(cell,rhoBar,j);
-//                 *cell.getExternal(densityOffset) = Descriptor<T>::fullRho(rhoBar);
-//                 j.to_cArray(cell.getExternal(momentumOffset));
-//             }
-//         }
-//     }
-// 
     // Temporary variable for the relaxation parameters omega.
     std::vector<T> omega(numSpecies), invOmega(numSpecies);
     std::vector<T> rhoBarVec(numSpecies);
     std::vector< Array<T,Descriptor<T>::d> > jVec(numSpecies);
     // Temporary variable for the common velocity.
     Array<T,Descriptor<T>::d> uTot;
-    // // Temporary variable for the interaction potential.
-    // std::vector<Array<T,D::d> > rhoContribution(numSpecies);
 
     // If omega is constant and imposed by the user, copy its value to
     //   the vector "omega", and compute the inverse.
@@ -300,10 +257,6 @@ void ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D<T,Descriptor>::
             invOmega[iOmega] = (T)1 / omega[iOmega];
         }
     }
-
-    // if (speciesG.empty()) {
-    //     speciesG.resize(numSpecies * numSpecies);
-    // }
 
     // Compute the interaction force between the species, and store it by
     //   means of a velocity correction in the external velocity field.
@@ -325,10 +278,10 @@ void ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D<T,Descriptor>::
                 T rhoBar;
                 cell.getDynamics().computeRhoBarJ(cell,rhoBar,j);
                 
-                // OUTPUT
-                pcout << "Species " << iSpecies << std::endl; 
-                pcout << " rhoBar = \t" << rhoBar << std::endl; 
-                pcout << " j = \t \t" << j[0] << ", " << j[1] << "\n" << std::endl; 
+                // // OUTPUT
+                // pcout << "Species " << iSpecies << std::endl; 
+                // pcout << " rhoBar = \t" << rhoBar << std::endl; 
+                // pcout << " j = \t \t" << j[0] << ", " << j[1] << "\n" << std::endl; 
                 
                     
                 rhoBarVec[iSpecies] = rhoBar;
@@ -340,13 +293,6 @@ void ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D<T,Descriptor>::
             for (int iD = 0; iD < Descriptor<T>::d; ++iD) {
                 uTot[iD] = T();
                 for (plint iSpecies=0; iSpecies<numSpecies; ++iSpecies) {
-                    //
-                    // Cell<T,Descriptor> const& cell = lattices[iSpecies]->get(iX,iY);
-                    // Array<T,Descriptor<T>::d> j;
-                    // T rhoBar;
-                    // cell.getDynamics().computeRhoBarJ(cell,rhoBar,j);
-                    //
-                    // j = jVec[iSpecies];
                     uTot[iD] += jVec[iSpecies][iD] * omega[iSpecies];
                 }
                 uTot[iD] /= weightedDensity;
@@ -357,37 +303,6 @@ void ShanChenMiscibleMultiComponentAdvectionDiffusionProcessor2D<T,Descriptor>::
                 }
 
             }
-
-            // // Computation of the interaction potential.
-            // for (plint iSpecies=0; iSpecies<numSpecies; ++iSpecies) {
-            //     multiPhaseTemplates2D<T,Descriptor>::shanChenInteraction (
-            //             *lattices[iSpecies],rhoContribution[iSpecies],iX,iY );
-            // }
-            
-            // Computation and storage of the final velocity, consisting
-            //   of uTot plus the momentum difference due to interaction
-            //   potential and external force
-            // for (plint iSpecies=0; iSpecies<numSpecies; ++iSpecies) {
-            //     Cell<T,Descriptor>& cell = lattices[iSpecies]->get(iX,iY);
-            //     T *momentum = cell.getExternal(momentumOffset);
-            //     
-            //     for (int iD = 0; iD < D::d; ++iD) {
-            //         momentum[iD] = uTot[iD];
-            //         // Initialize force contribution with force from external fields if there
-            //         //   is any, or with zero otherwise.
-            //         T forceContribution = getExternalForceComponent(cell, iD);
-            //         // Then, add a contribution from the potential of all other species.
-            //         // for (plint iPartnerSpecies=0; iPartnerSpecies<numSpecies; ++iPartnerSpecies) {
-            //         //     if (iPartnerSpecies != iSpecies) {
-            //         //         forceContribution -= speciesG[iSpecies * numSpecies + iPartnerSpecies] *
-            //         //             rhoContribution[iPartnerSpecies][iD];
-            //         //     }
-            //         // }
-            //         momentum[iD] += invOmega[iSpecies]*forceContribution;
-            //         // Multiply by rho to convert from velocity to momentum.
-            //         momentum[iD] *= *cell.getExternal(densityOffset);
-            //     }
-            // }
         }
     }
 }
