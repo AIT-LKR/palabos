@@ -101,6 +101,17 @@ namespace descriptors {
     template<typename T>
     const char MiscibleShanChenD2Q9Descriptor<T>::name[] = "MiscibleShanChenD2Q9";
 
+    /// D2Q5 lattice for Miscible Shan-Chen model
+    template <typename T>
+    struct MiscibleShanChenD2Q5Descriptor
+        : public D2Q5DescriptorBase<T>, public Velocity2dDescriptorBase
+    {
+        static const char name[];
+    };
+
+    template<typename T>
+    const char MiscibleShanChenD2Q5Descriptor<T>::name[] = "MiscibleShanChenD2Q5";
+
     /// D2Q9 lattice for Shan-Chen model with force
     template <typename T>
     struct ForcedShanChenD2Q9Descriptor
