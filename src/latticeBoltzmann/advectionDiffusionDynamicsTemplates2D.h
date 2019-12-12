@@ -225,15 +225,8 @@ static T no_corr_rlb_collision (
     T jSqr = jEq[0]*jEq[0]+jEq[1]*jEq[1];
     dynamicsTemplatesImpl<T,D>::bgk_ma2_equilibria( rhoBar, invRho, jEq, jSqr, f);
     for (plint iPop = 0; iPop < D::q; ++iPop) {
-        f[iPop] += ((T)1-omega)*(D::t[iPop]*D::invCs2 * (D::c[iPop][0]*jNeq[0]+D::c[iPop][1]*jNeq[1]));
+        f[iPop] += ((T)1-omega)*(D::t[iPop]*D::invCs2 * (D::c[iPop][0]*jNeq[0]+D::c[iPop][1]*jNeq[1])) + D::t[iPop] * source;
     }
-          
-    const T halfSourceCs2 = (T)0.5*source*D::cs2;
-
-    for (plint iPop = 1; iPop < D::q; ++iPop) {
-        f[iPop] += halfSourceCs2;
-    }
-    
 
     return jSqr*invRho*invRho;
 }
