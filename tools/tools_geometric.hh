@@ -25,6 +25,22 @@ bool isInTube(T x,T y,T z, T rSq, T cX,T cY,T Z0,T Z1) {
     if (z > Z1)  return false;
     return isInCircle(x,y,rSq,cX,cY);
 }
+template<typename T>
+bool isInTube(T x,T y,T z, T a, T b, T cX,T cY,T Z0,T Z1) {
+    if (Z0 > Z1) return false;
+    if (z < Z0)  return false;
+    if (z > Z1)  return false;
+    return isInOval(x,y,a,b,cX,cY);
+}
+
+template<typename T>
+bool isInOval(T x,T y, T a,T b, T cX,T cY) {
+    if (a <= 0 || b <= 0) return false;
+    T xr = x-cX; // relative to centre
+    T yr = y-cY;
+    if (xr*xr/a/a + yr*yr/b/b > 1) return false;
+    return true;
+}
 
 template<typename T>
 bool isInSphere(T x,T y,T z, T rSq, T cX,T cY,T cZ) {

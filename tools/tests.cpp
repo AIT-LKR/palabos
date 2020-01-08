@@ -195,6 +195,16 @@ TEST_CASE( "isInTube" ) {
     }
 }
 
+TEST_CASE( "isInOval" ) {
+
+    SECTION( "wrong input" ) {
+        int x=0, y=0;
+        int a=-1, b=1;
+        int cX=0, cY=0;
+        REQUIRE( isInOval(x,y, a,b,cX,cY) == false );
+    }
+}
+
 
 TEST_CASE( "isInParabola" ) {
 
