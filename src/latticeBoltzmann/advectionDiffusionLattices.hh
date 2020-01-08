@@ -37,6 +37,8 @@
 #include "latticeBoltzmann/advectionDiffusionLattices.h"
 #include "latticeBoltzmann/nearestNeighborLattices3D.h"
 #include "latticeBoltzmann/nearestNeighborLattices3D.hh"
+#include "latticeBoltzmann/nearestNeighborLattices2D.h"
+#include "latticeBoltzmann/nearestNeighborLattices2D.hh"
 
 namespace plb {
 
