@@ -16,7 +16,7 @@ template<typename T>
 bool isInTube(T x,T y,T z, T a, T b, T cX,T cY,T Z0,T Z1);
 
 template<typename T>
-bool isInOval(T x,T y, T a,T b, T cX,T cY);
+bool isInEllipse(T x,T y, T a,T b, T cX,T cY);
 
 template<typename T>
 bool isInSphere(T x,T y,T z, T rSq, T cX,T cY,T cZ);

@@ -195,31 +195,49 @@ TEST_CASE( "isInTube" ) {
     }
 }
 
-TEST_CASE( "isInOval" ) {
+TEST_CASE( "isInEllipse" ) {
 
     SECTION( "wrong input" ) {
         int x=0, y=0;
-        int a=-1, b=1;
+        int aSq=-1, b=1;
         int cX=0, cY=0;
-        REQUIRE( isInOval(x,y, a,b,cX,cY) == false );
+        REQUIRE( isInEllipse(x,y, aSq,b*b,cX,cY) == false );
     }
     SECTION( "outside" ) {
         float x=1, y=1;
         float a=1, b=1;
         float cX=0, cY=0;
-        REQUIRE( isInOval(x,y, a,b,cX,cY) == false );
+        REQUIRE( isInEllipse(x,y, a*a,b*b,cX,cY) == false );
     }
     SECTION( "outside" ) {
         float x=1.1, y=0;
         float a=1, b=1;
         float cX=0, cY=0;
-        REQUIRE( isInOval(x,y, a,b,cX,cY) == false );
+        REQUIRE( isInEllipse(x,y, a*a,b*b,cX,cY) == false );
+    }
+    SECTION( "outside" ) {
+        float x=0, y=1.1;
+        float a=1, b=1;
+        float cX=0, cY=0;
+        REQUIRE( isInEllipse(x,y, a*a,b*b,cX,cY) == false );
+    }
+    SECTION( "outside" ) {
+        float x=0, y=1.1;
+        float a=2, b=1;
+        float cX=0, cY=0;
+        REQUIRE( isInEllipse(x,y, a*a,b*b,cX,cY) == false );
+    }
+    SECTION( "outside" ) {
+        float x=1.1, y=0;
+        float a=1, b=1;
+        float cX=0, cY=0;
+        REQUIRE( isInEllipse(x,y, a*a,b*b,cX,cY) == false );
     }
     SECTION( "inside" ) {
         float x=1, y=0;
         float a=1, b=1;
         float cX=0, cY=0;
-        REQUIRE( isInOval(x,y, a,b,cX,cY) == true );
+        REQUIRE( isInEllipse(x,y, a*a,b*b,cX,cY) == true );
     }
 }
 
