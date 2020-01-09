@@ -203,6 +203,24 @@ TEST_CASE( "isInOval" ) {
         int cX=0, cY=0;
         REQUIRE( isInOval(x,y, a,b,cX,cY) == false );
     }
+    SECTION( "outside" ) {
+        float x=1, y=1;
+        float a=1, b=1;
+        float cX=0, cY=0;
+        REQUIRE( isInOval(x,y, a,b,cX,cY) == false );
+    }
+    SECTION( "outside" ) {
+        float x=1.1, y=0;
+        float a=1, b=1;
+        float cX=0, cY=0;
+        REQUIRE( isInOval(x,y, a,b,cX,cY) == false );
+    }
+    SECTION( "inside" ) {
+        float x=1, y=0;
+        float a=1, b=1;
+        float cX=0, cY=0;
+        REQUIRE( isInOval(x,y, a,b,cX,cY) == true );
+    }
 }
 
 
