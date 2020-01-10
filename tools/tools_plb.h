@@ -171,19 +171,19 @@ template<typename T1, typename T2>
 class PoiseuilleVelocity {
     public:
         PoiseuilleVelocity(T2 uLB_, T2 uDev_, char dir_,
-                T1 inletCentre_, T1 InR);
+                T1 InC_, T1 InR);
         PoiseuilleVelocity(T2 uLB_, T2 uDev_, char dir_,
-                T1 inletCentreA_, T1 inletCentreB_, T1 InR);
+                T1 InC_, T1 InZ_, T1 InR);
         PoiseuilleVelocity(T2 uLB_, T2 uDev_, char dir_,
-                T1 inletCentreA_, T1 inletCentreB_, T1 InR, T1 InR2_);
+                T1 InC_, T1 InZ_, T1 InR, T1 InR2_);
         void operator()(T1 iX, T1 iY, Array<T2,2>& u) const;
         void operator()(T1 iX, T1 iY, T1 iZ, Array<T2,3>& u) const;
     private:
         T2 uLB;
         T2 uDev;
         char dir;
-        T1 inletCentreA;
-        T1 inletCentreB;
+        T1 InC; // centre of inlet along boundary
+        T1 InZ; // z-plane of inlet
         T1 InRSq;
         T1 InR2Sq;
         unsigned seed;
