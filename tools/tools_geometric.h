@@ -65,7 +65,11 @@ T2 diameterFromSphereVolume(T1 volume);
 
 /// Velocity on the parabolic Poiseuille profile
 template<typename T1, typename T2>
-T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius);
+T2 poiseuilleVelocity(T1 r, T2 uMax, T1 InRSq);
+template<typename T1, typename T2>
+T2 poiseuilleVelocity(T1 x,T1 y, T2 uMax, T1 InRSq);
+template<typename T1, typename T2>
+T2 poiseuilleVelocity(T1 x,T1 y, T2 uMax, T1 aSq,T1 bSq);
 
 std::vector<float> rotate(float x, float y, float angle);
 

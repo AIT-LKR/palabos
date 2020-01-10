@@ -447,10 +447,10 @@ std::auto_ptr<MultiScalarField3D<T> > pseudomaskedSmoothen(MultiScalarField3D<T>
 /* **************************************************************************** */
 
 template<typename T1, typename T2>
-PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
-        T1 inletCentre_, T1 inletRadius_)
-    : uLB(uLB_), uDev(uDev_), powerPoiseuilleVel(powerPoiseuilleVel_), dir(dir_),
-     inletCentreA(inletCentre_), inletCentreB(-1), inletRadius(inletRadius_),
+PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, char dir_,
+        T1 inletCentre_, T1 InR)
+    : uLB(uLB_), uDev(uDev_), dir(dir_),
+     inletCentreA(inletCentre_), inletCentreB(-1), InRSq(InR*InR), InR2Sq(-1),
      seed(std::chrono::system_clock::now().time_since_epoch().count())
 {
     // random number generator
@@ -460,10 +460,24 @@ PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseui
 }
 
 template<typename T1, typename T2>
-PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, T1 powerPoiseuilleVel_, char dir_,
-        T1 inletCentreA_, T1 inletCentreB_, T1 inletRadius_)
-    : uLB(uLB_), uDev(uDev_), powerPoiseuilleVel(powerPoiseuilleVel_), dir(dir_),
-      inletCentreA(inletCentreA_), inletCentreB(inletCentreB_), inletRadius(inletRadius_),
+PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, char dir_,
+        T1 inletCentreA_, T1 inletCentreB_, T1 InR)
+    : uLB(uLB_), uDev(uDev_), dir(dir_),
+      inletCentreA(inletCentreA_), inletCentreB(inletCentreB_), InRSq(InR*InR), InR2Sq(InRSq),
+      seed(std::chrono::system_clock::now().time_since_epoch().count())
+{
+    // random number generator
+    generator = new std::default_random_engine(seed);
+    main_distribution = new std::normal_distribution<T2>(uLB-uDev, uDev);
+    side_distribution = new std::normal_distribution<T2>(0., uDev);
+}
+
+template<typename T1, typename T2>
+PoiseuilleVelocity<T1,T2>::PoiseuilleVelocity(T2 uLB_, T2 uDev_, char dir_,
+        T1 inletCentreA_, T1 inletCentreB_, T1 InR, T1 InR2)
+    : uLB(uLB_), uDev(uDev_), dir(dir_),
+      inletCentreA(inletCentreA_), inletCentreB(inletCentreB_),
+      InRSq(InR*InR), InR2Sq(InR2*InR2),
       seed(std::chrono::system_clock::now().time_since_epoch().count())
 {
     // random number generator
@@ -489,7 +503,7 @@ void PoiseuilleVelocity<T1,T2>::operator()(T1 iX, T1 iY, T1 iZ, Array<T2,3>& u) 
             r = distanceFromPoint<T2>(iY,iZ, inletCentreA,iZ);
         else
             r = distanceFromPoint<T2>(iY,iZ, inletCentreA,inletCentreB);
-        u[0] = poiseuilleVelocity(r, main_velocity, powerPoiseuilleVel, inletRadius);
+        u[0] = poiseuilleVelocity(r, main_velocity, InRSq);
         u[1] = side_velocity;
         u[2] = down_velocity;
     }
@@ -499,7 +513,7 @@ void PoiseuilleVelocity<T1,T2>::operator()(T1 iX, T1 iY, T1 iZ, Array<T2,3>& u) 
         else
             r = distanceFromPoint<T2>(iX,iZ, inletCentreA,inletCentreB);
         u[0] = side_velocity;
-        u[1] = poiseuilleVelocity(r, main_velocity, powerPoiseuilleVel, inletRadius);
+        u[1] = poiseuilleVelocity(r, main_velocity, InRSq);
         u[2] = down_velocity;
     }
 }
@@ -514,12 +528,12 @@ void PoiseuilleVelocity<T1,T2>::operator()(T1 iX, T1 iY, Array<T2,2>& u) const {
     }
 
     if( dir == 'x' ) {
-        u[0] = poiseuilleVelocity(iY-inletCentreA, main_velocity, powerPoiseuilleVel, inletRadius);
+        u[0] = poiseuilleVelocity(iY-inletCentreA, main_velocity, InRSq);
         u[1] = side_velocity;
     }
     if( dir == 'y' ) {
         u[0] = side_velocity;
-        u[1] = poiseuilleVelocity(iX-inletCentreA, main_velocity, powerPoiseuilleVel, inletRadius);
+        u[1] = poiseuilleVelocity(iX-inletCentreA, main_velocity, InRSq);
     }
 }
 

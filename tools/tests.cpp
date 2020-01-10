@@ -67,27 +67,42 @@ TEST_CASE( "test_rampVelocity_function" ) {
 
 TEST_CASE( "test_poiseuille_function" ) {
 
-    randNumber<double>     randomDouble(time(0));
-    randNumber<int> randomInt(time(0));
-    double velMax;
-    int velPow;
-    int inletRadius;
+    double velMax = 4;
+    int inletRadius = 10;
+    int InRSq = inletRadius*inletRadius;
 
-    for( int i=0; i<iterations; i++ ) {
-        velMax         = randomDouble(0.1, 2.);
-     // should work for arbitrary pows
-        velPow         = randomInt(1, 20);
-        inletRadius = randomInt(1, 100);
-     // should work for pos or neg velocity
-        if (i > iterations/2) velMax *= -1;
-
+    SECTION( "2D" ) {
      // velocity in middle should be max
-        REQUIRE( poiseuilleVelocity(0, velMax, velPow, inletRadius) == velMax );
+        REQUIRE( poiseuilleVelocity(0, velMax, InRSq) == velMax );
+        REQUIRE( poiseuilleVelocity(0, -1*velMax, InRSq) == -1*velMax );
      // velocity at corner should be 0
-        REQUIRE( poiseuilleVelocity(inletRadius, velMax, velPow, inletRadius) == 0 );
+        REQUIRE( poiseuilleVelocity(inletRadius, velMax, InRSq) == 0 );
      // velocity outside inletRadius should be 0
-        REQUIRE( poiseuilleVelocity(inletRadius+1, velMax, velPow, inletRadius) == 0 );
-        REQUIRE( poiseuilleVelocity(inletRadius*5, velMax, velPow, inletRadius) == 0 );
+        REQUIRE( poiseuilleVelocity(inletRadius+1, velMax, InRSq) == 0 );
+        REQUIRE( poiseuilleVelocity(inletRadius*5, velMax, InRSq) == 0 );
+    }
+
+    SECTION( "circle" ) {
+     // velocity in middle should be max
+        REQUIRE( poiseuilleVelocity(0,0, velMax, InRSq) == velMax );
+        REQUIRE( poiseuilleVelocity(0,0, -1*velMax, InRSq) == -1*velMax );
+     // velocity at corner should be 0
+        REQUIRE( poiseuilleVelocity(inletRadius,0, velMax, InRSq) == 0 );
+        REQUIRE( poiseuilleVelocity(0,inletRadius, velMax, InRSq) == 0 );
+     // velocity outside inletRadius should be 0
+        REQUIRE( poiseuilleVelocity(inletRadius+1,0, velMax, InRSq) == 0 );
+        REQUIRE( poiseuilleVelocity(inletRadius*5,0, velMax, InRSq) == 0 );
+    }
+
+    SECTION( "ellipse" ) {
+     // velocity in middle should be max
+        REQUIRE( poiseuilleVelocity(0,0, velMax, InRSq,InRSq/4) == velMax );
+        REQUIRE( poiseuilleVelocity(0,0, -1*velMax, InRSq,InRSq/4) == -1*velMax );
+     // velocity at corner should be 0
+        REQUIRE( poiseuilleVelocity(inletRadius,0, velMax, InRSq,InRSq/4) == 0 );
+     // velocity outside inletRadius should be 0
+        REQUIRE( poiseuilleVelocity(inletRadius+1,0, velMax, InRSq,InRSq/4) == 0 );
+        REQUIRE( poiseuilleVelocity(inletRadius*5,0, velMax, InRSq,InRSq/4) == 0 );
     }
 }
 

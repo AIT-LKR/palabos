@@ -214,15 +214,27 @@ T2 diameterFromSphereVolume(T1 volume) {
 
 /// Velocity on the parabolic Poiseuille profile
 template<typename T1, typename T2>
-T2 poiseuilleVelocity(T1 r, T2 uMax, T1 powerPoiseuilleVel, T1 inletRadius) {
-    // r_dash represents shift from zero to new inletCentre and scaling to
-    // a parabola across inlet
-    T2 r_dash = T2(r)/inletRadius;
-    if (r_dash > 1.) return 0;
-    T2 r_dash_sqr = pow( r_dash, powerPoiseuilleVel);
-    T2 vel = -1*uMax*( r_dash_sqr - 1);
-    return vel;
-}
+T2 poiseuilleVelocity(T1 r, T2 uMax, T1 InRSq) {
+    T2 vel = poiseuilleVelocity(r,T1(0),uMax,InRSq);
+    return vel; }
+
+template<typename T1, typename T2>
+T2 poiseuilleVelocity(T1 x,T1 y, T2 uMax, T1 InRSq) {
+    T2 vel = poiseuilleVelocity(x,y,uMax,InRSq,InRSq);
+    return vel; }
+
+template<typename T1, typename T2>
+T2 poiseuilleVelocity(T1 x,T1 y, T2 uMax, T1 aSq,T1 bSq) {
+    T2 intensity;
+    if (aSq == bSq) {
+        intensity = T2(aSq-y*y-x*x)/T2(aSq);
+    } else {
+        intensity = T2(aSq*bSq-y*y*aSq-x*x*bSq) / T2(aSq*bSq);
+    }
+
+    if (intensity < 0.) return 0;
+    T2 vel = intensity * uMax;
+    return vel; }
 
 std::vector<float> rotate(float x, float y, float angle) {
     float x_dash = cos(angle)*x + sin(angle)*y;
