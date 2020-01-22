@@ -34,6 +34,7 @@
 #include "core/globalDefs.h"
 #include "latticeBoltzmann/externalFields.h"
 #include "latticeBoltzmann/roundOffPolicy.h"
+#include "latticeBoltzmann/nearestNeighborLattices2D.h"
 #include "latticeBoltzmann/nearestNeighborLattices3D.h"
 #include "latticeBoltzmann/nearestNeighborLattices2D.h"
 #include <vector>
