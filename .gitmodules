@@ -3,4 +3,4 @@
 	url = https://github.com/catchorg/Catch2.git
 [submodule "externalLibraries/IsoSurface"]
 	path = externalLibraries/IsoSurface
-	url = git@192.168.25.130:blacherd/isosurfaceextractionadvanced.git
+	url = ../IsoSurfaceExtraction.git
