@@ -12,5 +12,5 @@ More information on the palabos library is available at [https://palabos.unige.c
 - For running [SEROS](https://github.com/AIT-LKR/SEROS), the tool [IsoSurfaceExtraction](https://github.com/AIT-LKR/IsoSurfaceExtraction) was created as fork of [https://github.com/mkazhdan/IsoSurfaceExtraction](https://github.com/mkazhdan/IsoSurfaceExtraction) and linked with this version of palabos as external library. This is also no crucial part to use palabos.
 - For an experimental feature to load 2D domains from a ppm, the code https://github.com/fmenozzi/easyppm was also added to the "externalLibraries". This is also no crucial part to use palabos.
 
-## Acknowledgement
-The work presented here was conducted in the context of the Clean Sky 2 project COMBO3D. This project has received funding from the Clean Sky 2 Joint Undertaking under the European Union’s Horizon 2020 research and innovation programme under grant agree- ment No 831851. This publication reflects only the author’s views and the European Union is not liable for any use that may be made of the information contained therein.
+## Funding
+The work presented here was conducted in the context of the Clean Sky 2 project COMBO3D. This project has received funding from the Clean Sky 2 Joint Undertaking under the European Union’s Horizon 2020 research and innovation programme under grant agreement No [831851](https://doi.org/10.3030/831851). This publication reflects only the author’s views and the European Union is not liable for any use that may be made of the information contained therein.
