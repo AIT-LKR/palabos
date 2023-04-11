@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/620821680.svg)](https://zenodo.org/badge/latestdoi/620821680)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7787946.svg)](https://doi.org/10.5281/zenodo.7787946)
 # palabos
 
 Based on release v2.0r0.
